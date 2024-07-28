@@ -56,25 +56,25 @@ def apply_morphology(edges):
     return morphed
 
 # Step 5: Approximate Contours
-def approximate_contours(contours, epsilon_factor=0):
+def approximate_contours(contours, epsilon_factor=0.02):
     approx_contours = []
     for cnt in contours:
         perimeter = cv2.arcLength(cnt, True)
         epsilon = epsilon_factor * perimeter
         approx = cv2.approxPolyDP(cnt, epsilon, True)
-        print(len(approx))
-        if len(approx) < 5:
-           approx = cv2.approxPolyDP(cnt, epsilon / 2, True)
+        area = cv2.contourArea(cnt)
+        circularity = 4 * np.pi * (area / (perimeter ** 2))
+        print(circularity)
+        if(circularity>0.8):  
+            approx = cv2.approxPolyDP(cnt,0.000*perimeter, True)
         approx_contours.append(approx)
     return approx_contours
 
 # Step 6: Draw Approximated Contours
 def draw_approximated_contours(img, approx_contours):
     for cnt in approx_contours:
-        area = cv2.contourArea(cnt)
-        if area > 100:
-            # Draw approximated contours with a custom color (e.g., blue)
-            cv2.drawContours(img, [cnt], -1, (255, 0, 0), 7)
+        color = (np.random.randint(0, 256), np.random.randint(0, 256), np.random.randint(0, 256))
+        cv2.drawContours(img, [cnt], -1, color, 7)
     
     plt.figure(figsize=(10, 10))
     plt.imshow(img)
@@ -83,7 +83,7 @@ def draw_approximated_contours(img, approx_contours):
     plt.show()
 
 # Define file paths and image size
-csv_path = 'tc/frag0.csv'
+csv_path = 'tc/isolated.csv'
 output_csv_path = 'tc/edges_polylines.csv'
 width, height = 512, 512  # Define the size of your image
 
@@ -98,11 +98,11 @@ edges = apply_canny(image)
 morphed_edges = apply_morphology(edges)
 
 # Create a blank color image for drawing
-blank_image = np.zeros((height, width, 3), dtype=np.uint8)
+blank_image = morphed_edges
 
 # Find contours and approximate them
 contours, hierarchy = cv2.findContours(morphed_edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-approx_contours = approximate_contours(contours, epsilon_factor=0.02)
+approx_contours = approximate_contours(contours)
 
 # Draw approximated contours on the blank image
 draw_approximated_contours(blank_image, approx_contours)
