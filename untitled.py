@@ -30,50 +30,55 @@ def apply_canny(image):
     edges = cv2.Canny(image, threshold1=50, threshold2=150)
     return edges
 
-# Step 4: Convert edges to polylines
-def edges_to_polylines(edges):
-    contours, _ = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-    polylines = []
+# Step 4: Approximate Contours
+def approximate_contours(contours, epsilon_factor=0.02):
+    approx_contours = []
+    for cnt in contours:
+        perimeter = cv2.arcLength(cnt, True)
+        approx = cv2.approxPolyDP(cnt, epsilon_factor * perimeter, True)
+        approx_contours.append(approx)
+    return approx_contours
 
-    for contour in contours:
-        polyline = contour[:, 0, :]  # Extract x, y coordinates
-        polylines.append(polyline)
-
-    return polylines
-
-# Step 5: Save polylines to a new CSV file
-def save_polylines_to_csv(polylines, csv_path):
-    with open(csv_path, 'w') as f:
-        for polyline_id, polyline in enumerate(polylines):
-            for point_id, point in enumerate(polyline):
-                f.write(f"{polyline_id},{point_id},{point[0]},{point[1]}\n")
+# Step 5: Draw Approximated Contours
+def draw_approximated_contours(img, approx_contours):
+    for cnt in approx_contours:
+        area = cv2.contourArea(cnt)
+        if area > 100:
+            # Draw approximated contours with a custom color (e.g., blue)
+            cv2.drawContours(img, [cnt], -1, (255, 0, 0), 7)
+    
+    plt.figure(figsize=(10, 10))
+    plt.imshow(img)
+    plt.title('Approximated Contours')
+    plt.axis('off')
+    plt.show()
 
 # Define file paths and image size
 csv_path = 'tc/isolated.csv'
 output_csv_path = 'tc/edges_polylines.csv'
-width, height = 900,900  # Define the size of your image
+width, height = 512, 512  # Define the size of your image
 
 # Execute steps
 path_XYs = read_csv(csv_path)
 image = polylines_to_image(path_XYs, width, height)
 
-# Visualize the original polylines image
-plt.figure(figsize=(10, 10))
-plt.imshow(image, cmap='gray')
-plt.title('Polylines Image')
-plt.axis('off')
-plt.show()
-
+# Apply Canny Edge Detection
 edges = apply_canny(image)
+kernel = np.ones((5, 5), np.uint8)
 
-# Visualize the edges
-plt.figure(figsize=(10, 10))
-plt.imshow(edges, cmap='gray')
-plt.title('Canny Edges')
-plt.axis('off')
-plt.show()
+# Apply dilation
+dilated_image = cv2.dilate(edges, kernel, iterations=1)
 
-polylines = edges_to_polylines(edges)
-save_polylines_to_csv(polylines, output_csv_path)
+# Create a blank color image for drawing
+blank_image = np.zeros((height, width, 3), dtype=np.uint8)
 
-output_csv_path
+# Find contours and approximate them
+contours, hierarchy = cv2.findContours(dilated_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+approx_contours = approximate_contours(contours, epsilon_factor=0.02)
+
+# Draw approximated contours on the blank image
+draw_approximated_contours(blank_image, approx_contours)
+
+# Optionally save the polylines to CSV
+# polylines = edges_to_polylines(edges)
+# save_polylines_to_csv(polylines, output_csv_path)
