@@ -74,7 +74,7 @@ def draw_approximated_contours(img, approx_contours):
     plt.show()
 
 # Define file paths and image size
-csv_path = 'tc/isolated.csv'
+csv_path = 'tc/frag0.csv'
 output_csv_path = 'tc/edges_polylines.csv'
 width, height = 512, 512  # Define the size of your image
 
