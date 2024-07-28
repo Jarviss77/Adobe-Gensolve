@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Jul 28 12:41:37 2024
+
+@author: OM
+"""
+
+
+
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
