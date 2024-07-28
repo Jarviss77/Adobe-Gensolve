@@ -1,62 +1,42 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Jul 28 12:41:37 2024
-
-@author: OM
-"""
-
-
-
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 
-# Step 1: Read the CSV file
+# Step 1: Read the CSV file and handle shapes inside shapes
 def read_csv(csv_path):
     data = np.genfromtxt(csv_path, delimiter=',')
-    path_XYs = []
+    shapes = []
 
     for i in np.unique(data[:, 0]):
-        npXYs = data[data[:, 0] == i][:, 2:]  # Skip the polyline_id and point_id columns
-        path_XYs.append([npXYs])
+        shape_points = data[data[:, 0] == i][:, 2:]  # Skip the polyline_id and point_id columns
+        shapes.append(shape_points)
     
-    return path_XYs
+    return shapes
 
-# Step 2: Convert polylines to an image
-def polylines_to_image(path_XYs, width, height):
-    img = np.zeros((height, width), dtype=np.uint8)
-
-    for polyline in path_XYs:
-        for path in polyline:
-            points = path.astype(int)
-            for i in range(len(points) - 1):
-                cv2.line(img, tuple(points[i]), tuple(points[i + 1]), color=255, thickness=2)
-
-    return img
+# Step 2: Convert shapes to individual images
+def shapes_to_images(shapes, width, height):
+    images = []
+    for shape in shapes:
+        img = np.zeros((height, width), dtype=np.uint8)
+        points = shape.astype(int)
+        for i in range(len(points) - 1):
+            cv2.line(img, tuple(points[i]), tuple(points[i + 1]), color=255, thickness=2)
+        images.append(img)
+    return images
 
 # Step 3: Apply Canny Edge Detection and show edges
 def apply_canny(image):
     edges = cv2.Canny(image, threshold1=50, threshold2=150)
-    plt.figure(figsize=(10, 10))
-    plt.imshow(edges, cmap='gray')
-    plt.title('Canny Edges')
-    plt.axis('off')
-    plt.show()
     return edges
 
 # Step 4: Apply morphological operations to separate close objects
 def apply_morphology(edges):
-    kernel = np.ones((3,3), np.uint8)
+    kernel = np.ones((3, 3), np.uint8)
     morphed = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel)
-    plt.figure(figsize=(10, 10))
-    plt.imshow(morphed)
-    plt.title('morphs')
-    plt.axis('off')
-    plt.show()
     return morphed
 
 # Step 5: Approximate Contours
-def approximate_contours(contours, epsilon_factor=0.02):
+def approximate_contours(contours, epsilon_factor=0.04):
     approx_contours = []
     for cnt in contours:
         perimeter = cv2.arcLength(cnt, True)
@@ -65,8 +45,8 @@ def approximate_contours(contours, epsilon_factor=0.02):
         area = cv2.contourArea(cnt)
         circularity = 4 * np.pi * (area / (perimeter ** 2))
         print(circularity)
-        if(circularity>0.8):  
-            approx = cv2.approxPolyDP(cnt,0.000*perimeter, True)
+        if(circularity>0.043):
+            approx = cv2.approxPolyDP(cnt, 0, True)
         approx_contours.append(approx)
     return approx_contours
 
@@ -74,7 +54,7 @@ def approximate_contours(contours, epsilon_factor=0.02):
 def draw_approximated_contours(img, approx_contours):
     for cnt in approx_contours:
         color = (np.random.randint(0, 256), np.random.randint(0, 256), np.random.randint(0, 256))
-        cv2.drawContours(img, [cnt], -1, color, 7)
+        cv2.drawContours(img, [cnt], -1, color, 2)
     
     plt.figure(figsize=(10, 10))
     plt.imshow(img)
@@ -83,29 +63,30 @@ def draw_approximated_contours(img, approx_contours):
     plt.show()
 
 # Define file paths and image size
-csv_path = 'tc/isolated.csv'
-output_csv_path = 'tc/edges_polylines.csv'
+csv_path = 'tc/frag0.csv'
 width, height = 512, 512  # Define the size of your image
 
 # Execute steps
-path_XYs = read_csv(csv_path)
-image = polylines_to_image(path_XYs, width, height)
+shapes = read_csv(csv_path)
+shape_images = shapes_to_images(shapes, width, height)
 
-# Apply Canny Edge Detection and show edges
-edges = apply_canny(image)
+# Create a blank color image for drawing all shapes
+combined_blank_image = np.zeros((height, width, 3), dtype=np.uint8)
 
-# Apply morphological operations to separate close objects
-morphed_edges = apply_morphology(edges)
+# Process each shape individually
+for shape_img in shape_images:
+    # Apply Canny Edge Detection and show edges
+    edges = apply_canny(shape_img)
+    
+    # Apply morphological operations to separate close objects
+    morphed_edges = apply_morphology(edges)
 
-# Create a blank color image for drawing
-blank_image = morphed_edges
-
-# Find contours and approximate them
-contours, hierarchy = cv2.findContours(morphed_edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-approx_contours = approximate_contours(contours)
-
-# Draw approximated contours on the blank image
-draw_approximated_contours(blank_image, approx_contours)
+    # Find contours and approximate them
+    contours, hierarchy = cv2.findContours(morphed_edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    approx_contours = approximate_contours(contours)
+    
+    # Draw approximated contours on the combined blank image
+    draw_approximated_contours(combined_blank_image, approx_contours)
 
 # Optionally save the polylines to CSV
 # polylines = edges_to_polylines(edges)
