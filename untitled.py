@@ -24,7 +24,7 @@ def shapes_to_images(shapes, width, height):
         images.append(img)
     return images
 
-# Step 3: Apply Canny Edge Detection and show edges
+# Step 3: Apply Canny Edge Detection
 def apply_canny(image):
     edges = cv2.Canny(image, threshold1=50, threshold2=150)
     return edges
@@ -36,17 +36,12 @@ def apply_morphology(edges):
     return morphed
 
 # Step 5: Approximate Contours
-def approximate_contours(contours, epsilon_factor=0.04):
+def approximate_contours(contours, epsilon_factor=0.03):
     approx_contours = []
     for cnt in contours:
         perimeter = cv2.arcLength(cnt, True)
         epsilon = epsilon_factor * perimeter
         approx = cv2.approxPolyDP(cnt, epsilon, True)
-        area = cv2.contourArea(cnt)
-        circularity = 4 * np.pi * (area / (perimeter ** 2))
-        print(circularity)
-        if(circularity>0.043):
-            approx = cv2.approxPolyDP(cnt, 0, True)
         approx_contours.append(approx)
     return approx_contours
 
@@ -62,16 +57,50 @@ def draw_approximated_contours(img, approx_contours):
     plt.axis('off')
     plt.show()
 
+# Step 7: Shape Completion for Connected Occlusion
+def complete_connected_occlusion(edges):
+    # Find contours
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    approx_contours = approximate_contours(contours)
+
+    # Connect occluded parts
+    completed_edges = np.zeros_like(edges)
+    for cnt in approx_contours:
+        for i in range(len(cnt) - 1):
+            cv2.line(completed_edges, tuple(cnt[i][0]), tuple(cnt[i + 1][0]), 255, thickness=1)
+    return completed_edges
+
+# Step 8: Shape Completion for Disconnected Occlusion
+def complete_disconnected_occlusion(edges):
+    # Find contours
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    approx_contours = approximate_contours(contours)
+
+    # Connect fragments
+    completed_edges = np.zeros_like(edges)
+    for cnt in approx_contours:
+        for i in range(len(cnt) - 1):
+            cv2.line(completed_edges, tuple(cnt[i][0]), tuple(cnt[i + 1][0]), 255, thickness=1)
+        # Close the contour
+        if len(cnt) > 2:
+            cv2.line(completed_edges, tuple(cnt[-1][0]), tuple(cnt[0][0]), 255, thickness=1)
+    return completed_edges
+
+# Step 9: Plot Completed Shapes
+def plot_completed_shapes(image, title):
+    plt.figure(figsize=(10, 10))
+    plt.imshow(image, cmap='gray')
+    plt.title(title)
+    plt.axis('off')
+    plt.show()
+
 # Define file paths and image size
-csv_path = 'tc/frag0.csv'
+csv_path = 'tc/occlusion1.csv'
 width, height = 512, 512  # Define the size of your image
 
 # Execute steps
 shapes = read_csv(csv_path)
 shape_images = shapes_to_images(shapes, width, height)
-
-# Create a blank color image for drawing all shapes
-combined_blank_image = np.zeros((height, width, 3), dtype=np.uint8)
 
 # Process each shape individually
 for shape_img in shape_images:
@@ -81,13 +110,10 @@ for shape_img in shape_images:
     # Apply morphological operations to separate close objects
     morphed_edges = apply_morphology(edges)
 
-    # Find contours and approximate them
-    contours, hierarchy = cv2.findContours(morphed_edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-    approx_contours = approximate_contours(contours)
-    
-    # Draw approximated contours on the combined blank image
-    draw_approximated_contours(combined_blank_image, approx_contours)
+    # Complete shapes for connected occlusion
+    completed_connected = complete_connected_occlusion(morphed_edges)
+    plot_completed_shapes(completed_connected, 'Connected Occlusion Completed Shapes')
 
-# Optionally save the polylines to CSV
-# polylines = edges_to_polylines(edges)
-# save_polylines_to_csv(polylines, output_csv_path)
+    # Complete shapes for disconnected occlusion
+    completed_disconnected = complete_disconnected_occlusion(morphed_edges)
+    plot_completed_shapes(completed_disconnected, 'Disconnected Occlusion Completed Shapes')
