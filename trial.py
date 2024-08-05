@@ -97,27 +97,30 @@ def detect_shapes(img):
     shapes = []
     edges = cv2.Canny(img.copy(), 0, 50)
     edges_line = cv2.GaussianBlur(edges.copy(), (15, 15), 0)
-    
-
+    flag = 0
     # Detect lines using Probabilistic Hough Line Transform
-    lines = cv2.HoughLinesP(edges_line, 0.01, np.pi/2 , threshold=200, minLineLength=0, maxLineGap=100)
+    lines = cv2.HoughLinesP(edges_line, 1, np.pi / 2, threshold=200, minLineLength=0, maxLineGap=100)
     if lines is not None:
         for line in lines:
             for x1, y1, x2, y2 in line:
                 shapes.append(("Line", np.array([[x1, y1], [x2, y2]])))
-                
     edges = img.copy()
     # Find contours
-    contours, hierarchy = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    contours, hierarchy = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     for contour in contours:
         # Filter small contours
         if cv2.contourArea(contour) < 500:  # Adjust the threshold as needed
             continue
-
+        # contour_image = np.zeros_like(img)
+        # cv2.drawContours(contour_image, [contour], -1, (255, 255, 255), thickness=cv2.FILLED)
+        # cv2.imwrite(f"contour_{count[0]}.jpg", contour_image)
+        
         # Approximate the contour
-        epsilon = 0.04 * cv2.arcLength(contour, True)
+        epsilon = 0.03 * cv2.arcLength(contour, True)
         approx = cv2.approxPolyDP(contour, epsilon, True)
-
+        
+        area1 = cv2.contourArea(approx)
+        area2 = cv2.contourArea(contour)
         if len(approx) == 3:
             shapes.append(("Triangle", approx))
         elif len(approx) == 4:
@@ -129,35 +132,47 @@ def detect_shapes(img):
             area = cv2.contourArea(contour)
             (x, y), radius = cv2.minEnclosingCircle(contour)
             circularity = area / (np.pi * radius * radius)
-            if 0.7 <= circularity <= 1.3:
+            if 0.70 <= circularity <= 1.3:
                 center = (int(x), int(y))
                 radius = int(radius)
                 shapes.append(("Circle", (center, radius)))
             else:
-                shapes.append(("Polygon", approx))
+                
+                if 1.05*area2>=area1>=0.95*area2: 
+                    shapes.append(("Polygon", approx))
 
             # Check for ellipse
-            if len(contour) >= 5:
+            if len(approx) >= 6:
                 ellipse = cv2.fitEllipse(contour)
-                shapes.append(("Ellipse", cv2.ellipse2Poly(
-                    center=(int(ellipse[0][0]), int(ellipse[0][1])),
-                    axes=(int(ellipse[1][0] / 2), int(ellipse[1][1] / 2)),
-                    angle=int(ellipse[2]),
+                center, axes, angle = ellipse
+                axes = (int(axes[0] / 2), int(axes[1] / 2))  # Convert to radius
+                ellipse_contour = cv2.ellipse2Poly(
+                    center=(int(center[0]), int(center[1])),
+                    axes=axes,
+                    angle=int(angle),
                     arcStart=0,
                     arcEnd=360,
                     delta=5
-                )))
+                )
+                # Compute the distance between the contour and the fitted ellipse
+                ellipse_contour = np.array(ellipse_contour)
+                distance = cv2.pointPolygonTest(ellipse_contour, center, True)
+                if abs(distance) < 40:  # Define an appropriate threshold
+                    shapes.append(("Ellipse", ellipse_contour))
+
 
             # Check for star
             if len(approx) >= 10:
                 shapes.append(("Star", approx))
 
     # Select the shape with the highest probability
-    shape_priorities = {"Circle": 1, "Square": 2, "Rectangle": 3, "Triangle": 4, "Star": 5, "Polygon": 6, "Ellipse": 7, "Line": 8}
+    shape_priorities = {"Circle": 1, "Square": 2, "Rectangle": 3, "Triangle": 4, "Star": 5, "Ellipse": 6, "Polygon": 7, "Line": 8}
+
     if shapes:
         shapes = sorted(shapes, key=lambda s: shape_priorities.get(s[0], 9))
         most_probable_shape = shapes[0]
         return [most_probable_shape]
+    
     return shapes
 
 def draw_shapes(img, shapes, curve_points=None):
@@ -206,12 +221,13 @@ images = []
 positions = []
 
 # Load data into a DataFrame
-df = pd.read_csv("occlusion1.csv", header=None, names=['Curve', 'Shape', 'X', 'Y'])
-
+df = pd.read_csv("occlusion2.csv", header=None, names=['Curve', 'Shape', 'X', 'Y'])
 
 # Group by curve
-curves = df.groupby('Curve')
+curves = df.groupby(['Curve',"Shape"])
+
 for curve_id, group in curves:
+
     x, y = group['X'].values, group['Y'].values
     x_smooth, y_smooth = smooth_points(x, y, s=0)
     x_interp, y_interp = interpolate_points(x_smooth, y_smooth, num_points=1000)
@@ -220,13 +236,13 @@ for curve_id, group in curves:
     positions.append((int(x.min()), int(y.min())))  # Store original positions for combining
 
     img = points_to_image(points)
-    # cv2.imwrite(f"without_shapes_detected_{curve_id}.png", img)
+    cv2.imwrite(f"without_shapes_detected_{curve_id}.png", img)
     shapes = detect_shapes(img)
 
     # If no shapes are detected, use the original curve points
     img_with_shapes = draw_shapes(img, shapes, curve_points=np.int32(points))
     images.append(img_with_shapes)
-    # cv2.imwrite(f"dummy_shapes_detected_{curve_id}.png", img_with_shapes)
+    cv2.imwrite(f"dummy_shapes_detected_{curve_id}.png", img_with_shapes)
 
 # Combine all images into one large image
 combined_image = combine_images(images, positions, width=1000, height=1000)
