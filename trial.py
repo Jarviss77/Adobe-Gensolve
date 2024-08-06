@@ -221,7 +221,7 @@ images = []
 positions = []
 
 # Load data into a DataFrame
-df = pd.read_csv("occlusion2.csv", header=None, names=['Curve', 'Shape', 'X', 'Y'])
+df = pd.read_csv("tc/occlusion2.csv", header=None, names=['Curve', 'Shape', 'X', 'Y'])
 
 # Group by curve
 curves = df.groupby(['Curve',"Shape"])

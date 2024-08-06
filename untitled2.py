@@ -1,227 +1,99 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Aug  5 18:15:58 2024
-
-@author: OM
-"""
-
-import sys
 import cv2
-import matplotlib.pyplot as plt
-import seaborn as sns
 import numpy as np
-import glob
+import matplotlib.pyplot as plt
 
-# create SIFT object ((a feature detection algorithm)) 
-sift = cv2.xfeatures2d.SIFT_create()
-# create BFMatcher object
-bf = cv2.BFMatcher()
+def fit_circle(points):
+    """ Fit a circle to the given points. """
+    if len(points) < 3:
+        return None
 
-####################
-## Run whole process
-####################
+    points = np.array(points)
+    x = points[:, 0]
+    y = points[:, 1]
+    x_mean = np.mean(x)
+    y_mean = np.mean(y)
 
-def detecting_mirrorLine(picture_name: str, title: str, show_detail = False):
-    """
-    Main function
+    x_centered = x - x_mean
+    y_centered = y - y_mean
+
+    A = np.vstack([x_centered**2 + y_centered**2, x_centered, y_centered, np.ones_like(x_centered)]).T
+    B = np.zeros(A.shape[0])
+
+    C, _, _, _ = np.linalg.lstsq(A, B, rcond=None)
+
+    A1, B1, C1, D1 = C
+    xc = -A1 / 2
+    yc = -B1 / 2
+    r = np.sqrt((A1 + B1**2 / 4 - C1) / 4 + (D1 - xc**2 - yc**2) / 4)
+
+    return xc + x_mean, yc + y_mean, r
+
+def fit_ellipse(points):
+    """ Fit an ellipse to the given points. """
+    if len(points) < 5:
+        return None
+
+    points = np.array(points, dtype=np.float32)
+    ellipse = cv2.fitEllipse(points)
     
-    If show_detail = True, plot matching details 
-    """
-    # create mirror object
-    mirror = Mirror_Symmetry_detection(picture_name)
+    return ellipse
 
-    # extracting and Matching a pair of symmetric features
-    matchpoints = mirror.find_matchpoints()
+def fit_convex_hull(points):
+    """ Fit a convex hull to the given points. """
+    if len(points) < 3:
+        print("Error: At least 3 points are required to compute a convex hull.")
+        return None
 
-    # get r, tehta (polar coordinates) of the midpoints of all pair of symmetric features
-    points_r, points_theta = mirror.find_points_r_theta(matchpoints)
-   
-    if show_detail: # visualize process in detail
-        mirror.draw_matches(matchpoints, top = 10)
-        mirror.draw_hex(points_r, points_theta)
+    points = np.array(points, dtype=np.float32)
 
-    # find the best one with highest vote
-    image_hexbin = plt.hexbin(points_r, points_theta, bins=200, cmap= plt.cm.Spectral_r) 
-    sorted_vote = mirror.sort_hexbin_by_votes(image_hexbin)
-    r, theta = mirror.find_coordinate_maxhexbin(image_hexbin, sorted_vote, vertical=False)  
-    
-    # add mirror line based on r and theta
-    mirror.draw_mirrorLine(r, theta, title)
+    if len(points) < 3:
+        print("Error: Less than 3 points are provided.")
+        return None
 
-def test_case(filesPath):
-    files = sorted([f for f in glob.glob(filesPath)])
-    for file in files:
-        detecting_mirrorLine(file, "With Mirror Line")
-        
+    # Ensure points are in the correct shape for cv2.convexHull
+    points = points.reshape(-1, 1, 2)
 
+    try:
+        hull = cv2.convexHull(points)
+        hull = hull.reshape(-1, 2)
+    except cv2.error as e:
+        print(f"OpenCV error: {e}")
+        return None
 
-#############################
-## Mirror symmetry detection
-#############################
+    return hull
 
+def draw_shape(image, points, shape_type):
+    """ Draw fitted shapes on the image. """
+    if shape_type == 'circle':
+        result = fit_circle(points)
+        if result:
+            xc, yc, r = result
+            cv2.circle(image, (int(xc), int(yc)), int(r), (0, 255, 0), 2)
+    elif shape_type == 'ellipse':
+        result = fit_ellipse(points)
+        if result:
+            center, axes, angle = result
+            cv2.ellipse(image, center, (int(axes[0]), int(axes[1])), angle, 0, 360, (0, 255, 0), 2)
+    elif shape_type == 'convex_hull':
+        result = fit_convex_hull(points)
+        if result is not None:
+            # Ensure result is in the correct format for polylines
+            result = result.reshape(-1, 1, 2)
+            cv2.polylines(image, [result], isClosed=True, color=(0, 255, 0), thickness=2)
 
-class Mirror_Symmetry_detection:
-    def __init__(self, image_path: str):
-        self.image = self._read_color_image(image_path) # convert the image into the array/matrix
+def main():
+    # Sample data points
+    points = [(50, 50), (100, 50), (75, 100), (60, 80)]
+    
+    # Create a blank image
+    image = np.zeros((200, 200, 3), dtype=np.uint8)
 
-        self.reflected_image = np.fliplr(self.image) # Flipped version of image 
-        
-        # find the keypoints and descriptors with SIFT
-        self.kp1, self.des1 = sift.detectAndCompute(self.image, None) 
-        self.kp2, self.des2 = sift.detectAndCompute(self.reflected_image, None)
-     
+    # Draw shapes
+    draw_shape(image, points, 'convex_hull')
     
-    def _read_color_image(self, image_path):
-        """
-        convert the image into the array/matrix with oroginal color
-        """
-        image = cv2.imread(image_path) # convert the image into the array/matrix
-        b,g,r = cv2.split(image)       # get b,g,r
-        image = cv2.merge([r,g,b])     # switch it to rgb
-        
-        return image
-        
-        
-    def find_matchpoints(self):
-        """
-        Extracting and Matching a pair of symmetric features
-    
-        Matches are then sort between the features ki and the mirrored features mj 
-        to form a set of (pi,pj) pairs of potentially symmetric features. 
-    
-        Ideally a keypoint at a certain spot on the object in original image should have a descriptor very similar to 
-        the descriptor on a point on the object in its mirrored version
-        """
-        # use BFMatcher.knnMatch() to get （k=2）matches
-        matches = bf.knnMatch(self.des1, self.des2, k=2)
-        # these matches are equivalent only one need be recorded
-        matchpoints = [item[0] for item in matches] 
-        
-        # sort to determine the dominant symmetries
-        # Distance between descriptors. The lower, the better it is.
-        matchpoints = sorted(matchpoints, key = lambda x: x.distance) 
-        
-        return matchpoints
-    
-    
-    def find_points_r_theta(self, matchpoints:list):
-        """
-        Get r, tehta of the midpoints of all pair of symmetric features
-        """
-        points_r = [] # list of r for each point
-        points_theta = [] # list of theta for each point
-        for match in matchpoints:
-        
-            point = self.kp1[match.queryIdx]  # queryIdx is an index into one set of keypoints, (origin image)
-            mirpoint = self.kp2[match.trainIdx] # trainIdx is an index into the other set of keypoints (fliped image)
-            
-            mirpoint.angle = np.deg2rad(mirpoint.angle) # Normalise orientation
-            mirpoint.angle = np.pi - mirpoint.angle
-            # convert angles to positive 
-            if mirpoint.angle < 0.0:   
-                mirpoint.angle += 2*np.pi
-                
-            # pt: coordinates of the keypoints x:pt[0], y:pt[1]
-            # change x, not y
-            mirpoint.pt = (self.reflected_image.shape[1]-mirpoint.pt[0], mirpoint.pt[1]) 
-                
-            # get θij: the angle this line subtends with the x-axis.
-            theta = angle_with_x_axis(point.pt, mirpoint.pt)  
-            
-            # midpoit (xc,yc) are the image centred co-ordinates of the mid-point of the line joining pi and pj
-            xc, yc = midpoint(point.pt, mirpoint.pt) 
-            r = xc*np.cos(theta) + yc*np.sin(theta)  
-    
-            points_r.append(r)
-            points_theta.append(theta)
-            
-        return points_r, points_theta # polar coordinates
+    plt.imshow(image)
+    plt.axis('off')
+    plt.show()
 
-
-    def draw_matches(self, matchpoints, top=10):
-        """visualize the best matchs
-        """
-        img = cv2.drawMatches(self.image, self.kp1, self.reflected_image, self.kp2, 
-                               matchpoints[:top], None, flags=2) 
-        plt.imshow(img); 
-        plt.title("Top {} pairs of symmetry points".format(top))
-        plt.show() 
-        
-    def draw_hex(self, points_r: list, points_theta: list):
-        """
-        Visualize hex bins based on r and theta
-        """  
-        # Make a 2D hexagonal binning plot of points r and theta 
-        image_hexbin = plt.hexbin(points_r, points_theta, bins=200, cmap= plt.cm.Spectral_r) 
-        plt.colorbar() # add color bar
-        plt.show()
-    
-    
-    def find_coordinate_maxhexbin(self, image_hexbin, sorted_vote, vertical):
-        """Try to find the x and y coordinates of the hexbin with max count
-        """
-        for k, v in sorted_vote.items():
-            # if mirror line is vertical, return the highest vote
-            if vertical:
-                return k[0], k[1]
-            # otherwise, return the highest vote, whose y is not 0 or pi
-            else:
-                if k[1] == 0 or k[1] == np.pi:
-                    continue
-                else:
-                    return k[0], k[1]
-            
-    
-    def sort_hexbin_by_votes(self, image_hexbin):
-        """Sort hexbins by decreasing count. (lower vote)
-        """
-        counts = image_hexbin.get_array()
-        ncnts = np.count_nonzero(np.power(10,counts)) # get non-zero hexbins
-        verts = image_hexbin.get_offsets() # coordinates of each hexbin
-        output = {}
-        
-        for offc in range(verts.shape[0]):
-            binx,biny = verts[offc][0],verts[offc][1]
-            if counts[offc]:
-                output[(binx,biny)] = counts[offc]
-        return {k: v for k, v in sorted(output.items(), key=lambda item: item[1], reverse=True)}
-                              
-    def draw_mirrorLine(self, r, theta, title:str): 
-        """
-        Draw mirror line based on r theta polar co-ordinate
-        """
-        for y in range(len(self.image)): 
-            try:
-                x = int((r-y*np.sin(theta))/np.cos(theta))
-                self.image[y][x] = 255
-                self.image[y][x+1] = 255 
-            except IndexError:
-                continue
-            
-        # draw plot 
-        plt.imshow(self.image)
-        plt.axis('off') 
-        plt.title(title)
-        plt.show()
-        
-def angle_with_x_axis(pi, pj):  # 公式在文件里解释
-    """
-    calculate θij:
-        the angle this line subtends with the x-axis.
-    """
-    # get the difference between point p1 and p2
-    x, y = pi[0]-pj[0], pi[1]-pj[1] 
-    
-    if x == 0:
-        return np.pi/2  
-    
-    angle = np.arctan(y/x)
-    if angle < 0:
-        angle += np.pi
-    return angle
-
-def midpoint(pi, pj):
-    """
-    get x and y coordinates of the midpoint of pi and pj
-    """
-    return (pi[0]+pj[0])/2, (pi[1]+pj[1])/2
+if __name__ == '__main__':
+    main()
