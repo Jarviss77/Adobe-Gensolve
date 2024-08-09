@@ -1,6 +1,6 @@
-opencv-python
-numpy
-scipy
-pandas
+streamlit==1.22.0
+opencv-python-headless==4.7.0.72
+numpy==1.25.0
+pandas==2.0.3
+scipy==1.11.3
 setuptools
-streamlit
