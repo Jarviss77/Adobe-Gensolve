@@ -97,6 +97,7 @@ def detect_shapes(img):
     return shapes
 
 # Draw shapes
+
 def draw_shapes(img, shapes, curve_points=None):
     if len(img.shape) == 2:
         img_color = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
@@ -104,22 +105,34 @@ def draw_shapes(img, shapes, curve_points=None):
         img_color = img.copy()
 
     blank_image = np.zeros_like(img_color)
+    shape_coords = []
 
     if shapes:
         for shape, contour in shapes:
-            color = (255, 255, 255)
+            color = (255, 255, 255)  # White
+
             if shape == "Circle":
                 center, radius = contour
-                cv2.circle(blank_image, center, radius, color, 1)
+                # Generate points for the circle
+                num_points = 100
+                angle = np.linspace(0, 2 * np.pi, num_points)
+                circle_points = np.array([
+                    (int(center[0] + radius * np.cos(a)), int(center[1] + radius * np.sin(a)))
+                    for a in angle
+                ])
+                cv2.polylines(blank_image, [circle_points], isClosed=True, color=color, thickness=1)
+                shape_coords.append(("Circle", circle_points))
             else:
                 cv2.drawContours(blank_image, [contour], -1, color, 1)
+                coords = contour.squeeze()
+                shape_coords.append((shape, coords))
     else:
         if curve_points is not None:
-            color = (255, 255, 255)
+            color = (255, 255, 255)  # White
             cv2.polylines(blank_image, [curve_points], isClosed=False, color=color, thickness=1)
+            shape_coords.append(("Curve", curve_points))
 
-    return blank_image
-
+    return blank_image, shape_coords
 # Combine images
 def combine_images(images, positions, width=1000, height=1000):
     combined_image = np.zeros((height, width, 3), dtype=np.uint8)
@@ -142,28 +155,68 @@ if uploaded_file is not None:
 
     curves = df.groupby(['Curve', 'Shape'])
 
+    processed_curves = []
     images = []
     positions = []
+    output_data = []
 
-    for _, group in curves:
+    for curve_id, group in curves:
         x, y = group['X'].values, group['Y'].values
         x_smooth, y_smooth = smooth_points(x, y, s=0)
         x_interp, y_interp = interpolate_points(x_smooth, y_smooth, num_points=1000)
 
+        pos_x, pos_y = int(x.min()), int(y.min())
         points = np.vstack((x_interp, y_interp)).T
         positions.append((int(x.min()), int(y.min())))
 
         img = points_to_image(points)
         shapes = detect_shapes(img)
 
-        img_with_shapes = draw_shapes(img, shapes, curve_points=np.int32(points))
+        img_with_shapes, shape_coords = draw_shapes(img, shapes, curve_points=np.int32(points))
         images.append(img_with_shapes)
 
+        # Store shape coordinates
+        for shape_type, coords in shape_coords:
+            if shape_type == "Curve":
+                # Ensure coordinates are flattened properly
+                for ix, iy in coords:
+                    output_data.append([curve_id[0], curve_id[1], ix, iy])
+            else:
+                for pt in coords:
+                    # Ensure point coordinates are flattened properly
+                    ix, iy = pt.flatten().tolist()
+                    output_data.append([curve_id[0], curve_id[1], ix, iy])
+
     combined_image = combine_images(images, positions, width=1000, height=1000)
-
-    st.image(combined_image, caption='Detected Shapes', use_column_width=True)
-
     # Option to download the image
     result_img_path = "combined_shapes.png"
     cv2.imwrite(result_img_path, combined_image)
-    st.download_button(label="Download Image", data=open(result_img_path, "rb").read(), file_name=result_img_path, mime="image/png")
+
+    output_csv_path = "shapes_coordinates.csv"
+    columns = ["ShapeType", "CurveID", "X", "Y"]
+    df_output = pd.DataFrame(output_data, columns=columns)
+    df_output.to_csv(output_csv_path, index=False)
+
+    # Create columns for side-by-side buttons
+    col1, col2 = st.columns(2)
+
+    # Image download button in the first column
+    with col1:
+        st.download_button(
+            label="Download Image",
+            data=open(result_img_path, "rb").read(),
+            file_name=result_img_path,
+            mime="image/png"
+        )
+
+    # CSV download button in the second column
+    with col2:
+        with open(output_csv_path, "rb") as f:
+            st.download_button(
+                label="Download CSV",
+                data=f,
+                file_name=output_csv_path,
+                mime="text/csv"
+            )
+    st.image(combined_image, caption='Detected Shapes', use_column_width=True)
+
