@@ -219,4 +219,3 @@ if uploaded_file is not None:
                 mime="text/csv"
             )
     st.image(combined_image, caption='Detected Shapes', use_column_width=True)
-
