@@ -6,8 +6,8 @@ import streamlit as st
 
 # Smoothing function
 def smooth_points(x, y, s=0):
-    spline_x = UnivariateSpline(range(len(x)), x, s=s)
-    spline_y = UnivariateSpline(range(len(y)), y, s=s)
+    spline_x = UnivariateSpline(range(len(x)), x, s=s,k=1)
+    spline_y = UnivariateSpline(range(len(y)), y, s=s,k=1)
     return spline_x(range(len(x))), spline_y(range(len(y)))
 
 # Interpolation function
@@ -60,7 +60,7 @@ def detect_shapes(img):
         elif len(approx) > 4:
             (x, y), radius = cv2.minEnclosingCircle(contour)
             circularity = area2 / (np.pi * radius * radius)
-            if 0.70 <= circularity <= 1.3:
+            if 0.75 <= circularity <= 1.25:
                 center = (int(x), int(y))
                 radius = int(radius)
                 shapes.append(("Circle", (center, radius)))
@@ -161,7 +161,9 @@ if uploaded_file is not None:
     output_data = []
 
     for curve_id, group in curves:
+        
         x, y = group['X'].values, group['Y'].values
+        if len(x)<=1: continue
         x_smooth, y_smooth = smooth_points(x, y, s=0)
         x_interp, y_interp = interpolate_points(x_smooth, y_smooth, num_points=1000)
 
