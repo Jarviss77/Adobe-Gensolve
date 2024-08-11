@@ -1,7 +1,7 @@
 # Generalized Hough Transform Algorithm for Shape Detection (Algorithm 2)
-![Output using algo1](./outputs/algo2/tc1.png)
+![Output using algo1](../outputs/algo2/tc1.png)
 
-![Output using algo1](./outputs/algo2/tc2.png)
+![Output using algo1](../outputs/algo2/tc2.png)
 
 --Output Using Algorithm 2
 This algorithm detects shapes in images using the Generalized Hough Transform. It involves several steps including edge detection, gradient orientation computation, and gradient accumulation.
