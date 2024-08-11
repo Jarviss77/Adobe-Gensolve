@@ -39,23 +39,24 @@ For the occlusion handling task, we have proposed and implemented the following 
 
 ## Output Using The Above Mentioned Algorithms
 
-- **Output 1**: 
-![Output using algo1](./outputs/algo1/tc1.png)
-
-![Output using algo1](./outputs/algo1/tc2.png)
-
-- **Output 2**: 
-
-![Output using algo1](./outputs/algo1/tc1.png)
-
-
-![Output using algo1](./outputs/algo1/tc2.png)
-
-- **Output 3**: 
+- **Output Using Algorithm 1**: 
 
 ![Output using algo1](./outputs/algo1/tc1.png)
 
 ![Output using algo1](./outputs/algo1/tc2.png)
+
+- **Output Using Algorithm 3**: 
+
+![Output using algo1](./outputs/algo2/tc1.png)
+
+
+![Output using algo1](./outputs/algo2/tc2.png)
+
+- **Output Using Algorithm 3**:  
+
+![Output using algo1](./outputs/algo3/tc1.png)
+
+![Output using algo1](./outputs/algo3/tc2.png)
 
 
 
