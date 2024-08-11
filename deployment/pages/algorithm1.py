@@ -151,21 +151,20 @@ def detecting_mirrorLine(csv_path, title):
 def main():
     st.title("Mirror Symmetry Detection")
 
-
     csv_file = st.file_uploader("Upload CSV", type=["csv"])
 
     if csv_file:
-        csv_path = csv_file.name
-
-
-        with open(f"../tests/{csv_path}", 'wb') as f:
-            f.write(csv_file.getbuffer())
+        # Use a temporary directory to save the file
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.csv') as tmp_file:
+            tmp_file.write(csv_file.getbuffer())
+            csv_path = tmp_file.name
 
         title = st.text_input("Mirror Symmetry Detection")
 
         if st.button("Detect Symmetry Line"):
             final_image = detecting_mirrorLine(csv_path, title)
             st.image(final_image, channels="BGR", caption="Detected Symmetry Line")
+
 
 
 if __name__ == '__main__':
