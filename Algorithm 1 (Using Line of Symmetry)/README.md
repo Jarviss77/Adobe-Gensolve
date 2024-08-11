@@ -1,7 +1,7 @@
 # Symmetry Detection and Analysis Algorithm (Algorithm 1)
-![Output using algo1](./outputs/algo1/tc1.png)
+![Output using algo1](../outputs/algo1/tc1.png)
 
-![Output using algo1](./outputs/algo1/tc2.png)
+![Output using algo1](../outputs/algo1/tc2.png)
 
 --Output Using Algorithm 1
 This algorithm efficiently identifies and analyzes symmetry in images through a series of methodical steps:

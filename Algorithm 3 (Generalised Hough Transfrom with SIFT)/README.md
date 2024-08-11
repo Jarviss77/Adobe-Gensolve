@@ -1,7 +1,7 @@
 # Generalized Hough Transform Algorithm for Shape Detection With Multi-Scale and Multi-Shift Detection (Algorithm 3)
-![Output using algo1](./outputs/algo3/tc1.png)
+![Output using algo1](../outputs/algo3/tc1.png)
 
-![Output using algo1](./outputs/algo3/tc2.png)
+![Output using algo1](../outputs/algo3/tc2.png)
 
 --Output Using Algorithm 3
 
