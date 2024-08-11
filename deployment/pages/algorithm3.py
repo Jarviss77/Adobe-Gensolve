@@ -5,6 +5,10 @@ import matplotlib.pyplot as plt
 from collections import defaultdict
 from skimage.feature import canny
 from scipy.ndimage import sobel
+from PIL import Image
+import pandas as pd
+import os
+import io
 
 # Constants for edge detection
 MIN_CANNY_THRESHOLD = 1
@@ -85,23 +89,18 @@ def n_max(a, n):
 
 
 def overlay_reference_image(query_image, reference_image, position):
-    '''
-    Overlay the reference image on the query image at the specified position.
-    '''
     ref_h, ref_w = reference_image.shape
     q_h, q_w = query_image.shape
 
     ref_h_half = ref_h // 2
     ref_w_half = ref_w // 2
 
-    # Position where the top-left corner of the reference image should be placed
     pos_y, pos_x = position
     start_y = max(0, pos_y - ref_h_half)
     start_x = max(0, pos_x - ref_w_half)
     end_y = min(q_h, pos_y + ref_h_half)
     end_x = min(q_w, pos_x + ref_w_half)
 
-    # Overlay reference image
     ref_start_y = ref_h_half - (pos_y - start_y)
     ref_start_x = ref_w_half - (pos_x - start_x)
     ref_end_y = ref_start_y + (end_y - start_y)
@@ -125,20 +124,15 @@ def multi_scale_and_shift_detection(reference_images, query_image, scales, shift
 
     for reference_image in reference_images:
         for scale in scales:
-            # Resize the reference image
             scaled_reference_image = cv2.resize(
                 reference_image, None, fx=scale, fy=scale, interpolation=cv2.INTER_LINEAR)
 
-            # Apply Hough transform
             detect_s = general_hough_closure(scaled_reference_image)
             accumulator = detect_s(query_image)
 
-            # Find the best shift for this scale
             for shift_y, shift_x in shifts:
-                # Apply the shift
                 shifted_accumulator = np.roll(accumulator, shift=(shift_y, shift_x), axis=(0, 1))
                 max_value = shifted_accumulator.max()
-                print(shift_x, shift_y, scale, max_value)
 
                 if max_value >= max_accumulator_value:
                     max_accumulator_value = max_value
@@ -161,6 +155,8 @@ def test_general_hough(reference_images, query_image):
     fig, ax = plt.subplots(2, 2, figsize=(10, 10))
     fig.suptitle('Generalized Hough Transform', fontsize=16)
 
+    overlayed_image = None
+
     if best_reference_image is not None:
         ax[0, 0].set_title('Best Reference Image')
         ax[0, 0].imshow(best_reference_image, cmap='gray')
@@ -170,10 +166,8 @@ def test_general_hough(reference_images, query_image):
 
     query_image_colored = cv2.cvtColor(query_image, cv2.COLOR_GRAY2BGR)
 
-    # Draw the detected position in red
     if best_position:
         i, j = best_position
-        # Red circle with radius 5
         cv2.circle(query_image_colored, (j, i), 5, (0, 0, 255), -1)
 
     ax[0, 1].imshow(query_image_colored)
@@ -187,11 +181,9 @@ def test_general_hough(reference_images, query_image):
     if best_reference_image is not None:
         ax[1, 1].set_title('Detection')
 
-        # Overlay the reference image at the detected location
         scaled_reference_image = cv2.resize(
             best_reference_image, None, fx=best_scale, fy=best_scale, interpolation=cv2.INTER_LINEAR)
 
-        # Adjust position for the best shift
         shifted_position = (best_position[0] + best_shift[0], best_position[1] + best_shift[1])
 
         overlayed_image = overlay_reference_image(
@@ -201,23 +193,18 @@ def test_general_hough(reference_images, query_image):
         ax[1, 1].axis('off')
 
     st.pyplot(fig)
-    return
-
+    
+    if overlayed_image is not None:
+        return overlayed_image
+    else:
+        return None
 
 
 def rotate_image(image, angle):
-    # Get the dimensions of the image
     (h, w) = image.shape[:2]
-
-    # Calculate the center of the image
     center = (w / 2, h / 2)
-
-    # Get the rotation matrix
     M = cv2.getRotationMatrix2D(center, angle, 1.0)
-
-    # Perform the rotation
     rotated_image = cv2.warpAffine(image, M, (w, h))
-
     return rotated_image
 
 
@@ -226,20 +213,31 @@ def shapes_to_image(shapes, image_shape=(250, 250)):
     for shape in shapes:
         for points in shape:
             for x, y in points:
-                # Set pixel value to 255 (white) for shape points
                 image[int(y), int(x)] = 255
     return image
 
-import os
-# import streamlit as st
+
+def extract_pixel_data(image, color_value=255):
+    image = Image.fromarray(image)
+    image = image.convert('L')
+    width, height = image.size
+    pixel_data = []
+    pixels = np.array(image)
+
+    for y in range(height):
+        for x in range(width):
+            if pixels[y, x] == color_value:
+                pixel_data.append([0, 0, x, y])
+
+    df = pd.DataFrame(pixel_data, columns=["curveid", "shape_id", "X", "Y"])
+    return df
+
 
 def main():
-    st.title("Generalized Hough Transform")
+    st.title("Generalized Hough Transform With Multi-Scale Scaling and Shifting")
 
-    # Get the directory of the current script
     script_dir = os.path.dirname(__file__)
 
-    # Construct the file paths
     ref_file_1 = os.path.join(script_dir, 'single_ellipse.csv')
     ref_file_2 = os.path.join(script_dir, 'double_ellipse.csv')
 
@@ -251,11 +249,22 @@ def main():
             read_csv_(ref_file_2)
         ]
         query_shapes = read_csv_(query_file)
-        
+
         reference_images = [shapes_to_image(shapes) for shapes in reference_shapes_list]
         query_image = shapes_to_image(query_shapes)
 
-        test_general_hough(reference_images, query_image)
+        overlayed_image = test_general_hough(reference_images, query_image)
+
+        if overlayed_image is not None:
+            df = extract_pixel_data(overlayed_image)
+            csv = df.to_csv(index=False)
+
+            st.download_button(
+                label="Download CSV",
+                data=csv,
+                file_name="detected_points.csv",
+                mime="text/csv"
+            )
 
 if __name__ == "__main__":
     main()
