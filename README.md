@@ -2,6 +2,7 @@
 ![Output using algo1](./outputs/algo1/tc1.png)
 
 ![Output using algo1](./outputs/algo1/tc2.png)
+
 --Output Using Algorithm 1
 This algorithm efficiently identifies and analyzes symmetry in images through a series of methodical steps:
 
@@ -47,6 +48,7 @@ This approach combines feature matching, symmetry detection, corner detection, a
 ![Output using algo1](./outputs/algo2/tc1.png)
 
 ![Output using algo1](./outputs/algo2/tc2.png)
+
 --Output Using Algorithm 2
 This algorithm detects shapes in images using the Generalized Hough Transform. It involves several steps including edge detection, gradient orientation computation, and gradient accumulation.
 
@@ -102,7 +104,9 @@ This algorithm detects shapes in images using the Generalized Hough Transform. I
 ![Output using algo1](./outputs/algo3/tc1.png)
 
 ![Output using algo1](./outputs/algo3/tc2.png)
+
 --Output Using Algorithm 3
+
 This advanced algorithm detects shapes using the Generalized Hough Transform with added multi-scale and multi-shift detection capabilities.
 
 ## Key Components and Steps
