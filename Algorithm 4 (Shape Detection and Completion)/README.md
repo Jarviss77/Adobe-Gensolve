@@ -56,3 +56,5 @@ The shape detection process in this algorithm involves several steps to accurate
 By following these steps, the algorithm accurately detects and classifies geometric shapes, providing a visual representation of the identified shapes or retaining the original curves when no recognizable shape is found.
 
 This shape detection process is robust and versatile, making it suitable for a wide range of applications where precise shape recognition is crucial.
+
+---

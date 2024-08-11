@@ -73,3 +73,4 @@ If you would like to contribute to the Curvetopia project, please refer to the [
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](link-to-license) file for more details.
+

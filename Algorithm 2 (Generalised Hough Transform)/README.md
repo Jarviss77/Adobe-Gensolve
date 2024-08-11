@@ -52,5 +52,6 @@ This algorithm detects shapes in images using the Generalized Hough Transform. I
 - **Gradient Accumulation:** Accumulates votes in an accumulator array.
 - **Overlay and Visualization:** Displays detected shapes and overlays the reference image..
 
+
 ---
 
