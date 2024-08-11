@@ -2,6 +2,7 @@ from PIL import Image
 import numpy as np
 import pandas as pd
 
+
 def extract_pixel_data(image_path, 
                        csv_path="master_folder\\utils\\output\\out_csv\\filtered_pixel_data.csv"):
     """

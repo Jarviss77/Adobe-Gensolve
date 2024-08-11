@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from image2polyline import extract_pixel_data
 
 # Load data into a DataFrame
-df = pd.read_csv("trash/tc/frag2.csv", header=None, names=['Curve', 'Shape', 'X', 'Y'])
+df = pd.read_csv("../trash/tc/frag2.csv", header=None, names=['Curve', 'Shape', 'X', 'Y'])
 
 # Smoothing function
 def smooth_points(x, y, s=0):
