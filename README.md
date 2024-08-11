@@ -1,5 +1,8 @@
 # Symmetry Detection and Analysis Algorithm (Algorithm 1)
 ![Output using algo1](./outputs/algo1/tc1.png)
+
+![Output using algo1](./outputs/algo1/tc2.png)
+--Output Using Algorithm 1
 This algorithm efficiently identifies and analyzes symmetry in images through a series of methodical steps:
 
 ## 1. **Finding the Line of Symmetry**
@@ -41,7 +44,10 @@ This approach combines feature matching, symmetry detection, corner detection, a
 ---
 
 # Generalized Hough Transform Algorithm for Shape Detection (Algorithm 2)
-![Output using algo2](./outputs/algo2/tc1.png)
+![Output using algo1](./outputs/algo2/tc1.png)
+
+![Output using algo1](./outputs/algo2/tc2.png)
+--Output Using Algorithm 2
 This algorithm detects shapes in images using the Generalized Hough Transform. It involves several steps including edge detection, gradient orientation computation, and gradient accumulation.
 
 ## Key Components and Steps
@@ -93,7 +99,10 @@ This algorithm detects shapes in images using the Generalized Hough Transform. I
 ---
 
 # Generalized Hough Transform Algorithm for Shape Detection With Multi-Scale and Multi-Shift Detection (Algorithm 3)
-![Output using algo3](./outputs/algo3/tc1.png)
+![Output using algo1](./outputs/algo3/tc1.png)
+
+![Output using algo1](./outputs/algo3/tc2.png)
+--Output Using Algorithm 3
 This advanced algorithm detects shapes using the Generalized Hough Transform with added multi-scale and multi-shift detection capabilities.
 
 ## Key Components and Steps
