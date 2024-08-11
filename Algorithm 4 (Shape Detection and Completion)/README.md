@@ -1,4 +1,4 @@
-# Shape Detection and Regularization and Completion (Algorithm 4)
+# Shape Detection and Completion (Algorithm 4)
 
 ## Sample output
 ![occlusion1](../outputs/algo4/occlusion1.png)
