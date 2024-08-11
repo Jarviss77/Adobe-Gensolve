@@ -153,19 +153,19 @@ def multi_scale_and_shift_detection(reference_images, query_image, scales, shift
 
 def test_general_hough(reference_images, query_image):
     scales = [0.5, 1.0, 1.5, 2.0, 1.25, 1.35, 1.65]  # Example scales
-    shifts = [(10, 10), (0, 0), (-5, -5)] 
+    shifts = [(10, 10), (0, 0), (-5, -5)]
 
     best_accumulator, best_position, best_scale, best_shift, best_reference_image = multi_scale_and_shift_detection(
         reference_images, query_image, scales, shifts)
 
     fig, ax = plt.subplots(2, 2, figsize=(10, 10))
     fig.suptitle('Generalized Hough Transform', fontsize=16)
-    plt.title('Best Reference Image')
-    plt.imshow(best_reference_image, cmap='gray')
 
-    ax[0, 0].set_title('Best Reference Image')
-    ax[0, 0].imshow(best_reference_image, cmap='gray')
-    ax[0, 0].axis('off')
+    if best_reference_image is not None:
+        ax[0, 0].set_title('Best Reference Image')
+        ax[0, 0].imshow(best_reference_image, cmap='gray')
+        ax[0, 0].axis('off')
+
     ax[0, 1].set_title('Query Image with Red Points')
 
     query_image_colored = cv2.cvtColor(query_image, cv2.COLOR_GRAY2BGR)
@@ -176,32 +176,33 @@ def test_general_hough(reference_images, query_image):
         # Red circle with radius 5
         cv2.circle(query_image_colored, (j, i), 5, (0, 0, 255), -1)
 
-    plt.imshow(query_image_colored)
-
     ax[0, 1].imshow(query_image_colored)
     ax[0, 1].axis('off')
 
-    ax[1, 0].set_title('Accumulator')
-    ax[1, 0].imshow(best_accumulator, cmap='gray')
-    ax[1, 0].axis('off')
+    if best_accumulator is not None:
+        ax[1, 0].set_title('Accumulator')
+        ax[1, 0].imshow(best_accumulator, cmap='gray')
+        ax[1, 0].axis('off')
 
-    ax[1, 1].set_title('Detection')
+    if best_reference_image is not None:
+        ax[1, 1].set_title('Detection')
 
-    # Overlay the reference image at the detected location
-    scaled_reference_image = cv2.resize(
-        best_reference_image, None, fx=best_scale, fy=best_scale, interpolation=cv2.INTER_LINEAR)
+        # Overlay the reference image at the detected location
+        scaled_reference_image = cv2.resize(
+            best_reference_image, None, fx=best_scale, fy=best_scale, interpolation=cv2.INTER_LINEAR)
 
-    # Adjust position for the best shift
-    shifted_position = (best_position[0] + best_shift[0], best_position[1] + best_shift[1])
+        # Adjust position for the best shift
+        shifted_position = (best_position[0] + best_shift[0], best_position[1] + best_shift[1])
 
-    overlayed_image = overlay_reference_image(
-        query_image.copy(), scaled_reference_image, shifted_position)
+        overlayed_image = overlay_reference_image(
+            query_image.copy(), scaled_reference_image, shifted_position)
 
-    ax[1, 1].imshow(overlayed_image, cmap='gray')
-    ax[1, 1].axis('off')
+        ax[1, 1].imshow(overlayed_image, cmap='gray')
+        ax[1, 1].axis('off')
 
     st.pyplot(fig)
     return
+
 
 
 def rotate_image(image, angle):
