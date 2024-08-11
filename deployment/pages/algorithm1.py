@@ -29,14 +29,14 @@ def create_image_from_curves(curves, image_size=(500, 500), color=(255, 255, 255
             if len(points) <= 1:
                 continue
 
-            if len(points) == 2:
+            if len(points) <=1:
                 cv2.line(image, tuple(map(int, points[0])), tuple(map(int, points[1])), color, 2)
                 continue
 
             x = np.array([p[0] for p in points])
             y = np.array([p[1] for p in points])
 
-            tck, u = splprep([x, y], s=0, k=2)
+            tck, u = splprep([x, y], s=0)
             u_new = np.linspace(u.min(), u.max(), 1000)
             x_new, y_new = splev(u_new, tck, der=0)
 
