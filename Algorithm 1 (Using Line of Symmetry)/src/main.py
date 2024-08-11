@@ -113,7 +113,7 @@ def draw_b_spline_curve(image, points, color=(0, 255, 0)):
 
 def detecting_mirrorLine(image_path, csv_path, title):
     """
-    Detects the line of symmetry in the image and finds the maximum Harris corners and their corresponding symmetric points.
+    Detects the line of symmetry in the image and finds the Harris corners and their corresponding symmetric points.
     """
     curves = read_csv(csv_path)
     image_from_curves = create_image_from_curves(curves, image_size=(500, 500), color=(255, 255, 255))
@@ -159,53 +159,9 @@ def detecting_mirrorLine(image_path, csv_path, title):
         plt.title(f"{title} - Harris Corners, Symmetric Points, and Symmetry Line")
         plt.show()
 
-    """
-    Detects the line of symmetry in the image and finds the maximum Harris corners and their corresponding symmetric points.
-    """
-    curves = read_csv(csv_path)
-    image_from_curves = create_image_from_curves(curves, image_size=(500, 500), color=(255, 255, 255))
-    
-    # Save and reload the image to ensure it gets processed correctly
-    temp_image_path = 'curves_image.png'
-    cv2.imwrite(temp_image_path, image_from_curves)
-    image = cv2.imread(temp_image_path)
-    
-    # Detect the top 2 Harris corners
-    corners, corner_image = detect_harris_corners(image, num_corners=15)
-
-    mirror = Mirror_Symmetry_detection(temp_image_path)
-    matchpoints = mirror.find_matchpoints()
-    points_r, points_theta = mirror.find_points_r_theta(matchpoints)
-
-    image_hexbin = plt.hexbin(points_r, points_theta, bins=200, cmap=plt.cm.Spectral_r)
-    sorted_vote = mirror.sort_hexbin_by_votes(image_hexbin)
-    r, theta = mirror.find_coordinate_maxhexbin(image_hexbin, sorted_vote, vertical=False)
-
-    symmetry_line = mirror.draw_mirrorLine(r, theta, title)
-
-    if symmetry_line:
-        x1, y1, x2, y2 = symmetry_line
-
-        for corner in corners:
-            opposite_point = find_opposite_point(corner, (x1, y1, x2, y2))
-
-            # Draw the Harris corner and its corresponding symmetric point
-            cv2.circle(corner_image, corner, 5, (0, 255, 0), 2)  # Green for the Harris corner
-            cv2.circle(corner_image, opposite_point, 5, (255, 0, 0), 2)  # Red for the symmetric point
-
-            # Draw B-spline connecting the points
-            corner_image = draw_b_spline_curve(corner_image, [corner, opposite_point], color=(255, 165, 0))
-
-        # Display the final image
-        plt.figure(figsize=(12, 8))
-        plt.imshow(cv2.cvtColor(corner_image, cv2.COLOR_BGR2RGB))
-        plt.axis('off')
-        plt.title(f"{title} - Harris Corners and Symmetric Points")
-        plt.show()
-
 def main():
     image_path = 'occlusion2.png'
-    csv_path = 'occlusion1.csv'  # Update this if you need CSV data for other purposes
+    csv_path = 'occlusion2.csv'  # Update this if you need CSV data for other purposes
     detecting_mirrorLine(image_path, csv_path, "Mirror Symmetry Detection")
 
 if __name__ == '__main__':

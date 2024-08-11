@@ -91,7 +91,7 @@ This algorithm detects shapes in images using the Generalized Hough Transform. I
 3. **Visualize Results:**
    - Visualize the results including the best match and the overlayed reference image.
 
-## Code Summary
+## Algo 2 Summary
 
 - **Edge Detection:** Uses Canny edge detection and Sobel filter.
 - **R-Table Construction:** Creates a lookup table for edge points.
@@ -156,7 +156,7 @@ This advanced algorithm detects shapes using the Generalized Hough Transform wit
 3. **Visualize Results:**
    - Visualize the best match and overlayed reference image.
 
-## Code Summary
+## Algo 3 Summary
 
 - **Edge Detection:** Uses Canny edge detection and Sobel filter.
 - **R-Table Construction:** Creates a lookup table for edge points.
