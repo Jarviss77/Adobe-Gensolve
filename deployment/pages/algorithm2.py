@@ -229,13 +229,19 @@ def shapes_to_image(shapes, image_shape=(250, 250)):
                 image[int(y), int(x)] = 255
     return image
 
+import os
+# import streamlit as st
 
 def main():
     st.title("Generalized Hough Transform")
 
-    # File uploader for reference images and query image
-    ref_file_1 = 'single_ellipse.csv'
-    ref_file_2 = 'double_ellipse.csv'
+    # Get the directory of the current script
+    script_dir = os.path.dirname(__file__)
+
+    # Construct the file paths
+    ref_file_1 = os.path.join(script_dir, 'single_ellipse.csv')
+    ref_file_2 = os.path.join(script_dir, 'double_ellipse.csv')
+
     query_file = st.file_uploader("Upload Query CSV", type=["csv"])
 
     if query_file:
@@ -249,7 +255,6 @@ def main():
         query_image = shapes_to_image(query_shapes)
 
         test_general_hough(reference_images, query_image)
-
 
 if __name__ == "__main__":
     main()
