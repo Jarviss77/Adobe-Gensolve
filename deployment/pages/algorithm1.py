@@ -155,9 +155,9 @@ def main():
 
     if csv_file:
         # Use a temporary directory to save the file
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.csv') as tmp_file:
-            tmp_file.write(csv_file.getbuffer())
-            csv_path = tmp_file.name
+        # with tempfile.NamedTemporaryFile(delete=False, suffix='.csv') as tmp_file:
+        #     tmp_file.write(csv_file.getbuffer())
+        #     csv_path = tmp_file.name
 
         title = st.text_input("Mirror Symmetry Detection")
 
