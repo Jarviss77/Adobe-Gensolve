@@ -100,14 +100,19 @@ def draw_b_spline_curve(image, points, color=(0, 255, 0)):
     return image
 
 
-def detecting_mirrorLine(image_path, csv_path, title):
+def detecting_mirrorLine(csv_path, title):
+    """
+    Detects the line of symmetry in the image and finds the Harris corners and their corresponding symmetric points.
+    """
     curves = read_csv(csv_path)
     image_from_curves = create_image_from_curves(curves, image_size=(500, 500), color=(255, 255, 255))
 
-    temp_image_path = 'outputs/curves_image.png'
+    # Save and reload the image to ensure it gets processed correctly
+    temp_image_path = 'curves_image.png'
     cv2.imwrite(temp_image_path, image_from_curves)
     image = cv2.imread(temp_image_path)
 
+    # Detect the top 15 Harris corners
     corners, corner_image = detect_harris_corners(image, num_corners=15)
 
     mirror = Mirror_Symmetry_detection(temp_image_path)
@@ -123,39 +128,43 @@ def detecting_mirrorLine(image_path, csv_path, title):
     if symmetry_line:
         x1, y1, x2, y2 = symmetry_line
 
-        cv2.line(corner_image, (x1, y1), (x2, y2), (255, 255, 0), 2)
+        # Draw the symmetry line on the image
+        cv2.line(corner_image, (x1, y1), (x2, y2), (255, 255, 0), 2)  # Yellow for the symmetry line
 
         for corner in corners:
             opposite_point = find_opposite_point(corner, (x1, y1, x2, y2))
 
-            cv2.circle(corner_image, corner, 5, (0, 255, 0), 2)
-            cv2.circle(corner_image, opposite_point, 5, (255, 0, 0), 2)
+            # Draw the Harris corner and its corresponding symmetric point
+            cv2.circle(corner_image, corner, 5, (0, 255, 0), 2)  # Green for the Harris corner
+            cv2.circle(corner_image, opposite_point, 5, (255, 0, 0), 2)  # Red for the symmetric point
 
+            # Draw B-spline connecting the points
             corner_image = draw_b_spline_curve(corner_image, [corner, opposite_point], color=(255, 165, 0))
 
-        return corner_image
-
+        # Display the final image
+        plt.figure(figsize=(12, 8))
+        plt.imshow(cv2.cvtColor(corner_image, cv2.COLOR_BGR2RGB))
+        plt.axis('off')
+        plt.title(f"{title} - Harris Corners, Symmetric Points, and Symmetry Line")
+        plt.show()
 
 def main():
     st.title("Mirror Symmetry Detection")
 
-    image_file = st.file_uploader("Upload Image", type=["png", "jpg", "jpeg"])
+
     csv_file = st.file_uploader("Upload CSV", type=["csv"])
 
-    if image_file and csv_file:
-        image_path = image_file.name
+    if csv_file:
         csv_path = csv_file.name
 
-        with open(f"tests/{image_path}", 'wb') as f:
-            f.write(image_file.getbuffer())
 
         with open(f"tests/{csv_path}", 'wb') as f:
             f.write(csv_file.getbuffer())
 
-        title = st.text_input("Enter the title for the image", "Mirror Symmetry Detection")
+        title = st.text_input("Mirror Symmetry Detection")
 
         if st.button("Detect Symmetry Line"):
-            final_image = detecting_mirrorLine(image_path, csv_path, title)
+            final_image = detecting_mirrorLine(csv_path, title)
             st.image(final_image, channels="BGR", caption="Detected Symmetry Line")
 
 
