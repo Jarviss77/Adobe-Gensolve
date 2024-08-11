@@ -1,26 +1,23 @@
 import streamlit as st
 
 st.set_page_config(
-    page_title="Hello",
+    page_title="Adobe Gensolve Project",
     page_icon="👋",
 )
 
-st.write("# Welcome to Streamlit! 👋")
+st.write("Adobe Gensolve Project")
 
 st.markdown(
     """
-    Streamlit is an open-source app framework built specifically for
-    Machine Learning and Data Science projects.
-    **👈 Select a demo from the sidebar** to see some examples
-    of what Streamlit can do!
-    ### Want to learn more?
-    - Check out [streamlit.io](https://streamlit.io)
-    - Jump into our [documentation](https://docs.streamlit.io)
-    - Ask a question in our [community
-        forums](https://discuss.streamlit.io)
-    ### See more complex demos
-    - Use a neural net to [analyze the Udacity Self-driving Car Image
-        Dataset](https://github.com/streamlit/demo-self-driving)
-    - Explore a [New York City rideshare dataset](https://github.com/streamlit/demo-uber-nyc-pickups)
+    ## Welcome to the Adobe Gensolve Project
+    This is a multi-page web app that demonstrates different computer vision algorithms
+    
+    The app is divided into the following pages:
+    
+    1. **Algorithm 1:** Object completion using Harris Corner Detection and Symmetrical Analysis
+    2. **Algorithm 2:** A page that demonstrates the Generalized Hough Transform algorithm
+    3. **Algorithm 3:** A page that demonstrates the Generalized Hough Transform algorithm with multi-scale and multi-shift detection
+    4. **Algorithm 4:** Interpolation using Area-based and Edge-based methods
+
 """
 )
