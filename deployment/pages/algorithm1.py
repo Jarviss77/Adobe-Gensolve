@@ -155,8 +155,8 @@ def main():
         csv_data = pd.read_csv(csv_file).values
 
         # Optionally, display the CSV data for verification
-        st.write("Uploaded CSV Data:")
-        st.write(csv_data)
+        # st.write("Uploaded CSV Data:")
+        # st.write(csv_data)
 
         title = st.text_input("Enter Title for Symmetry Detection")
 
