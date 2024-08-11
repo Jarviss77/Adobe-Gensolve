@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 def extract_pixel_data(image_path, 
-                       csv_path="master_folder\\utils\\output\\out_csv\\filtered_pixel_data.csv"):
+                       csv_path):
     """
     Extracts pixel coordinates from a binary image and saves them to a CSV file.
 
