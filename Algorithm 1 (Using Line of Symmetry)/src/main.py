@@ -47,7 +47,7 @@ def create_image_from_curves(curves, image_size=(500, 500), color=(255, 255, 255
 
     return image
 
-def detect_harris_corners(image, num_corners=2, thresh_ratio=0.001):
+def detect_harris_corners(image, num_corners=2, thresh_ratio=0.1):
     """
     Detects Harris corners in the provided image.
     """
