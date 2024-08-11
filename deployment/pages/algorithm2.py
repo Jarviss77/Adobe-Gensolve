@@ -234,11 +234,11 @@ def main():
     st.title("Generalized Hough Transform")
 
     # File uploader for reference images and query image
-    ref_file_1 = '../master_folder/utils/images/single_ellipse.csv'
-    ref_file_2 = '../master_folder/utils/images/double_ellipse.csv'
+    ref_file_1 = st.file_uploader("Upload Reference CSV 1", type=["csv"])
+    ref_file_2 = st.file_uploader("Upload Reference CSV 2", type=["csv"])
     query_file = st.file_uploader("Upload Query CSV", type=["csv"])
 
-    if query_file:
+    if ref_file_1 and ref_file_2 and query_file:
         reference_shapes_list = [
             read_csv_(ref_file_1),
             read_csv_(ref_file_2)
@@ -249,7 +249,6 @@ def main():
         query_image = shapes_to_image(query_shapes)
 
         test_general_hough(reference_images, query_image)
-
 
 if __name__ == "__main__":
     main()
