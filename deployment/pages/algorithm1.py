@@ -26,7 +26,7 @@ def create_image_from_curves(curves, image_size=(500, 500), color=(255, 255, 255
 
     for curve in curves:
         for points in curve:
-            if len(points) < 2:
+            if len(points) <= 1:
                 continue
 
             if len(points) == 2:
