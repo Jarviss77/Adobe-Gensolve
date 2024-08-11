@@ -1,6 +1,7 @@
 ## Sample Output
-![frag2](../outputs/algo4/frag1.png)
 ![isolated](../outputs/algo4/isolated.png)
+![frag1](../outputs/algo4/frag1.png)
+![frag2](../outputs/algo4/frag2.png)
 
 ## Overview
 
