@@ -56,14 +56,8 @@ def draw_approximated_contours(img, approx_contours):
         color = (np.random.randint(0, 256), np.random.randint(0, 256), np.random.randint(0, 256))
         cv2.drawContours(img, [cnt], -1, color, 2)
 
-    plt.figure(figsize=(10, 10))
-    plt.imshow(img)
-    plt.title('Approximated Contours')
-    plt.axis('off')
-    plt.show()
-
 # Define file paths and image size
-csv_path = 'tc/frag0.csv'
+csv_path = 'trash/tc/frag1.csv'
 width, height = 512, 512  # Define the size of your image
 
 # Execute steps
@@ -87,6 +81,12 @@ for shape_img in shape_images:
 
     # Draw approximated contours on the combined blank image
     draw_approximated_contours(combined_blank_image, approx_contours)
+    
+plt.figure(figsize=(10, 10))
+plt.imshow(combined_blank_image)
+plt.title('Approximated Contours')
+plt.axis('off')
+plt.show()
 
 # Optionally save the polylines to CSV
 # polylines = edges_to_polylines(edges)
