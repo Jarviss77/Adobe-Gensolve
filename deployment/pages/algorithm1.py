@@ -100,10 +100,9 @@ def draw_b_spline_curve(image, points, color=(0, 255, 0)):
     return image
 
 
+from PIL import Image
+
 def detecting_mirrorLine(data, title):
-    """
-    Detects the line of symmetry in the image and finds the Harris corners and their corresponding symmetric points.
-    """
     curves = read_csv(data)
     image_from_curves = create_image_from_curves(curves, image_size=(500, 500), color=(255, 255, 255))
 
@@ -141,12 +140,10 @@ def detecting_mirrorLine(data, title):
             # Draw B-spline connecting the points
             corner_image = draw_b_spline_curve(corner_image, [corner, opposite_point], color=(255, 165, 0))
 
-        # Display the final image
-        plt.figure(figsize=(12, 8))
-        plt.imshow(cv2.cvtColor(corner_image, cv2.COLOR_BGR2RGB))
-        plt.axis('off')
-        plt.title(f"{title} - Harris Corners, Symmetric Points, and Symmetry Line")
-        plt.show()
+        # Convert OpenCV image to PIL format
+        final_image = Image.fromarray(cv2.cvtColor(corner_image, cv2.COLOR_BGR2RGB))
+
+        return final_image
 
 def main():
     st.title("Mirror Symmetry Detection")
