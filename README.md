@@ -1,5 +1,7 @@
 # Curvetopia Project README
 
+Find deployed link here: [Deployed website](https://adobe-gensolve.streamlit.app/)
+
 ## Tour to our repository
 * We have developed once agorithm for [Regularization Task](/Regularization/) and four different algorithm for shape completion ([Shape detection and Completion](/Algorithm%204%20(Shape%20Detection%20and%20Completion)/).[Generalized Hough Transform with Multi-Scaling and Multi-Shifting](/Algorithm%203%20(Generalised%20Hough%20Transfrom%20with%20SIFT)/).[Generalized Hough Transform with Template Shapes README](/Algorithm%202%20(Generalised%20Hough%20Transform)/).[Symmetry-Based B-Spline Algorithm README](/Algorithm%201%20(Using%20Line%20of%20Symmetry)/))
 
