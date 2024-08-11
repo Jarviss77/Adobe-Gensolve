@@ -221,7 +221,7 @@ def rotate_image(image, angle):
     return rotated_image
 
 
-def shapes_to_image(shapes, image_shape=(250, 250)):
+def shapes_to_image(shapes, image_shape=(1000, 1000)):
     image = np.zeros(image_shape, dtype=np.uint8)
     for shape in shapes:
         for points in shape:
