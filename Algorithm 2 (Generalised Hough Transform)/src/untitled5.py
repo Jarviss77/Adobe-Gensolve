@@ -23,7 +23,7 @@ def plot(paths_XYs, title, ax):
     ax.set_title(title)
 
 # Read and process the CSV files
-csv_path1 = "occlusion1_sol.csv"
+csv_path1 = "single_ellipse.csv"
 
 
 output_data1 = read_csv_(csv_path1)
