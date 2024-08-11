@@ -181,7 +181,7 @@ def rotate_image(image, angle):
     rotated_image = cv2.warpAffine(image, M, (w, h))
     return rotated_image
 
-def shapes_to_image(shapes, image_shape=(250, 250)):
+def shapes_to_image(shapes, image_shape=(750, 750)):
     image = np.zeros(image_shape, dtype=np.uint8)
     for shape in shapes:
         for points in shape:
