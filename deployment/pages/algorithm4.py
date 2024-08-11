@@ -191,10 +191,10 @@ if uploaded_file is not None:
 
     combined_image = combine_images(images, positions, width=1000, height=1000)
     # Option to download the image
-    result_img_path = "combined_shapes.png"
+    result_img_path = "outputs/combined_shapes.png"
     cv2.imwrite(result_img_path, combined_image)
 
-    output_csv_path = "shapes_coordinates.csv"
+    output_csv_path = "outputs/shapes_coordinates.csv"
     columns = ["ShapeType", "CurveID", "X", "Y"]
     df_output = pd.DataFrame(output_data, columns=columns)
     df_output.to_csv(output_csv_path, index=False)
