@@ -234,7 +234,7 @@ import os
 # import streamlit as st
 
 def main():
-    st.title("Generalized Hough Transform")
+    st.title("Generalized Hough Transform With Multi Scale Scaling and Shifting")
 
     # Get the directory of the current script
     script_dir = os.path.dirname(__file__)
