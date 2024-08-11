@@ -234,8 +234,8 @@ def main():
     st.title("Generalized Hough Transform")
 
     # File uploader for reference images and query image
-    ref_file_1 = '../master_folder/utils/images/single_ellipse.csv'
-    ref_file_2 = '../master_folder/utils/images/double_ellipse.csv'
+    ref_file_1 = './single_ellipse.csv'
+    ref_file_2 = './double_ellipse.csv'
     query_file = st.file_uploader("Upload Query CSV", type=["csv"])
 
     if query_file:
