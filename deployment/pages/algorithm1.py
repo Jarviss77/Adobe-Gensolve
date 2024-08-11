@@ -8,8 +8,8 @@ from utils.line_of_symmetry import Mirror_Symmetry_detection
 from PIL import Image
 
 
-def read_csv(csv_path):
-    data = pd.read_csv(csv_path, header=None).values
+def read_csv(data):
+    # data = pd.read_csv(csv_path, header=None).values
     path_XYs = []
     for i in np.unique(data[:, 0]):
         npXYs = data[data[:, 0] == i][:, 1:]
@@ -100,11 +100,11 @@ def draw_b_spline_curve(image, points, color=(0, 255, 0)):
     return image
 
 
-def detecting_mirrorLine(csv_path, title):
+def detecting_mirrorLine(data, title):
     """
     Detects the line of symmetry in the image and finds the Harris corners and their corresponding symmetric points.
     """
-    curves = read_csv(csv_path)
+    curves = read_csv(data)
     image_from_curves = create_image_from_curves(curves, image_size=(500, 500), color=(255, 255, 255))
 
     # Save and reload the image to ensure it gets processed correctly
@@ -154,15 +154,18 @@ def main():
     csv_file = st.file_uploader("Upload CSV", type=["csv"])
 
     if csv_file:
-        # Use a temporary directory to save the file
-        # with tempfile.NamedTemporaryFile(delete=False, suffix='.csv') as tmp_file:
-        #     tmp_file.write(csv_file.getbuffer())
-        #     csv_path = tmp_file.name
+        # Read the CSV file into a DataFrame
+        csv_data = pd.read_csv(csv_file)
 
-        title = st.text_input("Mirror Symmetry Detection")
+        # Optionally, display the CSV data for verification
+        # st.write("Uploaded CSV Data:")
+        # st.write(csv_data)
+
+        title = st.text_input("Enter Title for Symmetry Detection")
 
         if st.button("Detect Symmetry Line"):
-            final_image = detecting_mirrorLine(csv_path, title)
+            # Since you don't have the file path, pass the DataFrame directly
+            final_image = detecting_mirrorLine(csv_data, title)
             st.image(final_image, channels="BGR", caption="Detected Symmetry Line")
 
 
