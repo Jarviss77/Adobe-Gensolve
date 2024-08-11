@@ -5,3 +5,4 @@ opencv-python-headless==4.8.0.76
 scipy==1.11.3
 setuptools>=67.0.0
 wheel>=0.40.0
+matplotlib
