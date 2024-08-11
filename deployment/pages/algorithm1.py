@@ -147,24 +147,22 @@ def detecting_mirrorLine(csv_path, title):
         plt.axis('off')
         plt.title(f"{title} - Harris Corners, Symmetric Points, and Symmetry Line")
         plt.show()
-
+from io import StringIO
 def main():
     st.title("Mirror Symmetry Detection")
 
-
+    # File uploader for CSV files
     csv_file = st.file_uploader("Upload CSV", type=["csv"])
 
-    if csv_file:
-        csv_path = csv_file.name
-
-
-        with open(f"../tests/{csv_path}", 'wb') as f:
-            f.write(csv_file.getbuffer())
-
-        title = st.text_input("Mirror Symmetry Detection")
+    if csv_file is not None:
+        # Read the uploaded CSV file into a DataFrame
+        csv_data = pd.read_csv(StringIO(csv_file.getvalue().decode('utf-8')))
+        
+        title = st.text_input("Mirror Symmetry Detection Title", "My Symmetry Detection")
 
         if st.button("Detect Symmetry Line"):
-            final_image = detecting_mirrorLine(csv_path, title)
+            # Assuming detecting_mirrorLine is a function that accepts DataFrame input
+            final_image = detecting_mirrorLine(csv_data, title)
             st.image(final_image, channels="BGR", caption="Detected Symmetry Line")
 
 
