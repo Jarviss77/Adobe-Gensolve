@@ -1,7 +1,7 @@
 # Shape Detection and Regularization and Completion (Algorithm 4)
 
 ## Sample output
-![frag1](outputs\algo4\frag1.png)
+![frag1](..\outputs\algo4\frag1.png)
 ![isolated](outputs\algo4\isolated.png)
 ![occlusion1](outputs\algo4\occlusion1.png)
 ![occlusion2](outputs\algo4\occlusion2.png)
