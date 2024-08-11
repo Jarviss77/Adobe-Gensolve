@@ -216,8 +216,8 @@ def shapes_to_image(shapes, image_shape=(250, 250)):
 
 def test():
     reference_shapes_list = [
-        read_csv_("../src/occlusion1_sol.csv"),
-        read_csv_("../images/occlusion2_sol.csv")
+        read_csv_("../images/single_ellipse.csv"),
+        read_csv_("../images/double_ellipse.csv")
     ]
     query_shapes = read_csv_("../images/occlusion1.csv")
 
