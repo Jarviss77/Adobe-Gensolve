@@ -18,6 +18,6 @@ st.markdown(
     2. **Algorithm 2:** A page that demonstrates the Generalized Hough Transform algorithm
     3. **Algorithm 3:** A page that demonstrates the Generalized Hough Transform algorithm with multi-scale and multi-shift detection
     4. **Algorithm 4:** Shape detection and completion
-
+    5. **Isolation and Fragmentation:** A page that demonstrates the regularization of fragmented shapes
 """
 )
