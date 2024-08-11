@@ -28,7 +28,7 @@ def read_csv_(csv_path):
         XYs = []
         for j in np.unique(npXYs[:, 0]):
             XY = npXYs[npXYs[:, 0] == j][:, 1:]
-        XYs.append(XY)
+            XYs.append(XY)
         path_XYs.append(XYs)
     return path_XYs
 
@@ -41,7 +41,8 @@ def gradient_orientation(image):
 
 
 def build_r_table(image, origin):
-    edges = canny(image, low_threshold=MIN_CANNY_THRESHOLD, high_threshold=MAX_CANNY_THRESHOLD)
+    edges = canny(image, low_threshold=MIN_CANNY_THRESHOLD,
+                  high_threshold=MAX_CANNY_THRESHOLD)
     gradient = gradient_orientation(edges)
 
     r_table = defaultdict(list)
@@ -52,7 +53,8 @@ def build_r_table(image, origin):
 
 
 def accumulate_gradients(r_table, grayImage):
-    edges = canny(grayImage, low_threshold=MIN_CANNY_THRESHOLD, high_threshold=MAX_CANNY_THRESHOLD)
+    edges = canny(grayImage, low_threshold=MIN_CANNY_THRESHOLD,
+                  high_threshold=MAX_CANNY_THRESHOLD)
     gradient = gradient_orientation(edges)
 
     accumulator = np.zeros(grayImage.shape)
@@ -66,7 +68,8 @@ def accumulate_gradients(r_table, grayImage):
 
 
 def general_hough_closure(reference_image):
-    referencePoint = (reference_image.shape[0] // 2, reference_image.shape[1] // 2)
+    referencePoint = (
+        reference_image.shape[0] // 2, reference_image.shape[1] // 2)
     r_table = build_r_table(reference_image, referencePoint)
 
     def f(query_image):
@@ -82,18 +85,23 @@ def n_max(a, n):
 
 
 def overlay_reference_image(query_image, reference_image, position):
+    '''
+    Overlay the reference image on the query image at the specified position.
+    '''
     ref_h, ref_w = reference_image.shape
     q_h, q_w = query_image.shape
 
     ref_h_half = ref_h // 2
     ref_w_half = ref_w // 2
 
+    # Position where the top-left corner of the reference image should be placed
     pos_y, pos_x = position
     start_y = max(0, pos_y - ref_h_half)
     start_x = max(0, pos_x - ref_w_half)
     end_y = min(q_h, pos_y + ref_h_half)
     end_x = min(q_w, pos_x + ref_w_half)
 
+    # Overlay reference image
     ref_start_y = ref_h_half - (pos_y - start_y)
     ref_start_x = ref_w_half - (pos_x - start_x)
     ref_end_y = ref_start_y + (end_y - start_y)
@@ -117,15 +125,21 @@ def multi_scale_and_shift_detection(reference_images, query_image, scales, shift
 
     for reference_image in reference_images:
         for scale in scales:
+            # Resize the reference image
             scaled_reference_image = cv2.resize(
                 reference_image, None, fx=scale, fy=scale, interpolation=cv2.INTER_LINEAR)
 
+            # Apply Hough transform
             detect_s = general_hough_closure(scaled_reference_image)
             accumulator = detect_s(query_image)
 
+            # Find the best shift for this scale
             for shift_y, shift_x in shifts:
+                # Apply the shift
                 shifted_accumulator = np.roll(accumulator, shift=(shift_y, shift_x), axis=(0, 1))
                 max_value = shifted_accumulator.max()
+                print(shift_x, shift_y, scale, max_value)
+
                 if max_value >= max_accumulator_value:
                     max_accumulator_value = max_value
                     best_accumulator = shifted_accumulator
@@ -146,16 +160,24 @@ def test_general_hough(reference_images, query_image):
 
     fig, ax = plt.subplots(2, 2, figsize=(10, 10))
     fig.suptitle('Generalized Hough Transform', fontsize=16)
+    plt.title('Best Reference Image')
+    plt.imshow(best_reference_image, cmap='gray')
 
     ax[0, 0].set_title('Best Reference Image')
     ax[0, 0].imshow(best_reference_image, cmap='gray')
     ax[0, 0].axis('off')
-
     ax[0, 1].set_title('Query Image with Red Points')
+
     query_image_colored = cv2.cvtColor(query_image, cv2.COLOR_GRAY2BGR)
+
+    # Draw the detected position in red
     if best_position:
         i, j = best_position
+        # Red circle with radius 5
         cv2.circle(query_image_colored, (j, i), 5, (0, 0, 255), -1)
+
+    plt.imshow(query_image_colored)
+
     ax[0, 1].imshow(query_image_colored)
     ax[0, 1].axis('off')
 
@@ -164,10 +186,17 @@ def test_general_hough(reference_images, query_image):
     ax[1, 0].axis('off')
 
     ax[1, 1].set_title('Detection')
-    scaled_reference_image = cv2.resize(best_reference_image, None, fx=best_scale, fy=best_scale,
-                                        interpolation=cv2.INTER_LINEAR)
+
+    # Overlay the reference image at the detected location
+    scaled_reference_image = cv2.resize(
+        best_reference_image, None, fx=best_scale, fy=best_scale, interpolation=cv2.INTER_LINEAR)
+
+    # Adjust position for the best shift
     shifted_position = (best_position[0] + best_shift[0], best_position[1] + best_shift[1])
-    overlayed_image = overlay_reference_image(query_image.copy(), scaled_reference_image, shifted_position)
+
+    overlayed_image = overlay_reference_image(
+        query_image.copy(), scaled_reference_image, shifted_position)
+
     ax[1, 1].imshow(overlayed_image, cmap='gray')
     ax[1, 1].axis('off')
 
@@ -176,10 +205,18 @@ def test_general_hough(reference_images, query_image):
 
 
 def rotate_image(image, angle):
+    # Get the dimensions of the image
     (h, w) = image.shape[:2]
+
+    # Calculate the center of the image
     center = (w / 2, h / 2)
+
+    # Get the rotation matrix
     M = cv2.getRotationMatrix2D(center, angle, 1.0)
+
+    # Perform the rotation
     rotated_image = cv2.warpAffine(image, M, (w, h))
+
     return rotated_image
 
 
@@ -188,19 +225,20 @@ def shapes_to_image(shapes, image_shape=(250, 250)):
     for shape in shapes:
         for points in shape:
             for x, y in points:
+                # Set pixel value to 255 (white) for shape points
                 image[int(y), int(x)] = 255
     return image
 
 
 def main():
-    st.title("Generalized Hough Transform with Multi-Scale and Shift Detection")
+    st.title("Generalized Hough Transform")
 
     # File uploader for reference images and query image
-    ref_file_1 = st.file_uploader("Upload Reference CSV 1", type=["csv"])
-    ref_file_2 = st.file_uploader("Upload Reference CSV 2", type=["csv"])
+    ref_file_1 = '../master_folder/utils/images/single_ellipse.csv'
+    ref_file_2 = '../master_folder/utils/images/double_ellipse.csv'
     query_file = st.file_uploader("Upload Query CSV", type=["csv"])
 
-    if ref_file_1 and ref_file_2 and query_file:
+    if query_file:
         reference_shapes_list = [
             read_csv_(ref_file_1),
             read_csv_(ref_file_2)

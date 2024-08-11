@@ -146,16 +146,24 @@ def test_general_hough(reference_images, query_image):
 
     fig, ax = plt.subplots(2, 2, figsize=(10, 10))
     fig.suptitle('Generalized Hough Transform', fontsize=16)
+    plt.title('Best Reference Image')
+    plt.imshow(best_reference_image, cmap='gray')
 
     ax[0, 0].set_title('Best Reference Image')
     ax[0, 0].imshow(best_reference_image, cmap='gray')
     ax[0, 0].axis('off')
-
     ax[0, 1].set_title('Query Image with Red Points')
+
     query_image_colored = cv2.cvtColor(query_image, cv2.COLOR_GRAY2BGR)
+
+    # Draw the detected position in red
     if best_position:
         i, j = best_position
+        # Red circle with radius 5
         cv2.circle(query_image_colored, (j, i), 5, (0, 0, 255), -1)
+
+    plt.imshow(query_image_colored)
+
     ax[0, 1].imshow(query_image_colored)
     ax[0, 1].axis('off')
 
@@ -164,10 +172,17 @@ def test_general_hough(reference_images, query_image):
     ax[1, 0].axis('off')
 
     ax[1, 1].set_title('Detection')
-    scaled_reference_image = cv2.resize(best_reference_image, None, fx=best_scale, fy=best_scale,
-                                        interpolation=cv2.INTER_LINEAR)
+
+    # Overlay the reference image at the detected location
+    scaled_reference_image = cv2.resize(
+        best_reference_image, None, fx=best_scale, fy=best_scale, interpolation=cv2.INTER_LINEAR)
+
+    # Adjust position for the best shift
     shifted_position = (best_position[0] + best_shift[0], best_position[1] + best_shift[1])
-    overlayed_image = overlay_reference_image(query_image.copy(), scaled_reference_image, shifted_position)
+
+    overlayed_image = overlay_reference_image(
+        query_image.copy(), scaled_reference_image, shifted_position)
+
     ax[1, 1].imshow(overlayed_image, cmap='gray')
     ax[1, 1].axis('off')
 
@@ -196,8 +211,8 @@ def main():
     st.title("Generalized Hough Transform with Multi-Scale and Shift Detection")
 
     # File uploader for reference images and query image
-    ref_file_1 = st.file_uploader("Upload Reference CSV 1", type=["csv"])
-    ref_file_2 = st.file_uploader("Upload Reference CSV 2", type=["csv"])
+    ref_file_1 = '../master_folder/utils/images/single_ellipse.csv'
+    ref_file_2 = '../master_folder/utils/images/double_ellipse.csv'
     query_file = st.file_uploader("Upload Query CSV", type=["csv"])
 
     if ref_file_1 and ref_file_2 and query_file:
