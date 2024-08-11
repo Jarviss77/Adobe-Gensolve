@@ -239,14 +239,14 @@ def main():
     script_dir = os.path.dirname(__file__)
 
     # Construct the file paths
-    # ref_file_1 = os.path.join(script_dir, 'single_ellipse.csv')
+    ref_file_1 = os.path.join(script_dir, 'single_ellipse.csv')
     ref_file_2 = os.path.join(script_dir, 'double_ellipse.csv')
 
     query_file = st.file_uploader("Upload Query CSV", type=["csv"])
 
     if query_file:
         reference_shapes_list = [
-            # read_csv_(ref_file_1),
+            read_csv_(ref_file_1),
             read_csv_(ref_file_2)
         ]
         query_shapes = read_csv_(query_file)
