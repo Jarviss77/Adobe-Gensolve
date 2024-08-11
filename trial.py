@@ -1,30 +1,30 @@
-import numpy as np
-def read_csv ( csv_path ):
-    np_path_XYs = np . genfromtxt ( csv_path , delimiter = ',')
-    path_XYs = []
-    for i in np . unique ( np_path_XYs [: , 0]):
-        npXYs = np_path_XYs [ np_path_XYs [: , 0] == i ][: , 1:]
-        XYs = []
-        for j in np . unique ( npXYs [: , 0]):
-            XY = npXYs [ npXYs [: , 0] == j ][: , 1:]
-            XYs . append ( XY )
-        path_XYs . append ( XYs )
-    return path_XYs
+# import numpy as np
+# def read_csv ( csv_path ):
+#     np_path_XYs = np . genfromtxt ( csv_path , delimiter = ',')
+#     path_XYs = []
+#     for i in np . unique ( np_path_XYs [: , 0]):
+#         npXYs = np_path_XYs [ np_path_XYs [: , 0] == i ][: , 1:]
+#         XYs = []
+#         for j in np . unique ( npXYs [: , 0]):
+#             XY = npXYs [ npXYs [: , 0] == j ][: , 1:]
+#             XYs . append ( XY )
+#         path_XYs . append ( XYs )
+#     return path_XYs
 
-import numpy as np
-import matplotlib . pyplot as plt
+# import numpy as np
+# import matplotlib . pyplot as plt
 
-def plot ( paths_XYs ):
-    fig , ax = plt . subplots ( tight_layout = True , figsize =(8 , 8))
-    for i , XYs in enumerate ( paths_XYs ):
-        # c = colours [ i % len( colours )]
-        for XY in XYs :
-            ax . plot ( XY [: , 0] , XY [: , 1] , linewidth =2)
-    ax . set_aspect ( "equal")
-    plt . show ()
+# def plot ( paths_XYs ):
+#     fig , ax = plt . subplots ( tight_layout = True , figsize =(8 , 8))
+#     for i , XYs in enumerate ( paths_XYs ):
+#         # c = colours [ i % len( colours )]
+#         for XY in XYs :
+#             ax . plot ( XY [: , 0] , XY [: , 1] , linewidth =2)
+#     ax . set_aspect ( "equal")
+#     plt . show ()
 
-a = read_csv("shapes_coordinates.csv")
-plot(a)
+# a = read_csv("shapes_coordinates.csv")
+# plot(a)
 
 # import numpy as np
 # import svgwrite
@@ -152,10 +152,10 @@ def detect_shapes(img):
                 if abs(distance) < 40:
                     shapes.append(("Ellipse", ellipse_contour))
 
-            if len(approx) >= 10:
+            if len(approx) == 10:
                 shapes.append(("Star", approx))
 
-    shape_priorities = {"Circle": 1, "Square": 2, "Rectangle": 3, "Triangle": 4, "Star": 5, "Ellipse": 6, "Polygon": 7,
+    shape_priorities = {"Circle": 1, "Square": 2, "Rectangle": 3, "Triangle": 4, "Ellipse": 5,"Star": 6, "Polygon": 7,
                         "Line": 8}
 
     if shapes:
@@ -221,7 +221,7 @@ positions = []
 output_data = []
 
 # Load data into a DataFrame
-df = pd.read_csv("tc/occlusion2.csv", header=None, names=['Curve', 'Shape', 'X', 'Y'])
+df = pd.read_csv("trash/tc/occlusion2.csv", header=None, names=['Curve', 'Shape', 'X', 'Y'])
 
 # Group by curve
 curves = df.groupby(['Curve', 'Shape'])
@@ -259,6 +259,6 @@ cv2.imwrite("combined_shapes.png", combined_image)
 
 # print(output_data)
 # Save the coordinates to a CSV file
-columns = ["ShapeType", "CurveID", "X", "Y"]
-df_output = pd.DataFrame(output_data, columns=columns)
-df_output.to_csv("shapes_coordinates.csv", index=False)
+# columns = ["ShapeType", "CurveID", "X", "Y"]
+# df_output = pd.DataFrame(output_data, columns=columns)
+# df_output.to_csv("shapes_coordinates.csv", index=False)
