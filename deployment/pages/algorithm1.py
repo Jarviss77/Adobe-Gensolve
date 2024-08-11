@@ -155,7 +155,7 @@ def main():
 
     if csv_file:
         # Read the CSV file into a DataFrame
-        csv_data = pd.read_csv(csv_file)
+        csv_data = pd.read_csv(csv_file, header=None).values
 
         # Optionally, display the CSV data for verification
         # st.write("Uploaded CSV Data:")
