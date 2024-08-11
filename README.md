@@ -19,6 +19,14 @@ Curvetopia is a project focused on identifying, regularizing, and beautifying va
 
 We have completed the regularization of curves. For detailed information on this process, please refer to the [Regularization Task README](/Regularization/README.md/).
 
+- **Output**:  
+
+![Output using algo1](./outputs/algo4/isolated.png)
+
+![Output using algo1](./outputs/algo4/frag1.png)
+
+![Output using algo1](./outputs/algo4/frag2.png)
+
 ## Occlusion Handling
 
 For the occlusion handling task, we have proposed and implemented the following algorithms:
