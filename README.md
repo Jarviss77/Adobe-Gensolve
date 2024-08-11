@@ -41,7 +41,7 @@ This approach combines feature matching, symmetry detection, corner detection, a
 ---
 
 # Generalized Hough Transform Algorithm for Shape Detection (Algorithm 2)
-
+![Output using algo2](./outputs/algo2/tc1.png)
 This algorithm detects shapes in images using the Generalized Hough Transform. It involves several steps including edge detection, gradient orientation computation, and gradient accumulation.
 
 ## Key Components and Steps
@@ -93,7 +93,7 @@ This algorithm detects shapes in images using the Generalized Hough Transform. I
 ---
 
 # Generalized Hough Transform Algorithm for Shape Detection With Multi-Scale and Multi-Shift Detection (Algorithm 3)
-
+![Output using algo3](./outputs/algo3/tc1.png)
 This advanced algorithm detects shapes using the Generalized Hough Transform with added multi-scale and multi-shift detection capabilities.
 
 ## Key Components and Steps
