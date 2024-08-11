@@ -36,7 +36,7 @@ def apply_morphology(edges):
     return morphed
 
 # Step 5: Approximate Contours
-def approximate_contours(contours, epsilon_factor=0.04):
+def approximate_contours(contours, epsilon_factor=0):
     approx_contours = []
     for cnt in contours:
         perimeter = cv2.arcLength(cnt, True)
@@ -45,7 +45,7 @@ def approximate_contours(contours, epsilon_factor=0.04):
         area = cv2.contourArea(cnt)
         circularity = 4 * np.pi * (area / (perimeter ** 2))
         print(circularity)
-        if(circularity>0.043):
+        if(circularity>12):
             approx = cv2.approxPolyDP(cnt, 0, True)
         approx_contours.append(approx)
     return approx_contours
@@ -77,7 +77,7 @@ for shape_img in shape_images:
 
     # Find contours and approximate them
     contours, hierarchy = cv2.findContours(morphed_edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-    approx_contours = approximate_contours(contours)
+    approx_contours = approximate_contours(contours, epsilon_factor=0)
 
     # Draw approximated contours on the combined blank image
     draw_approximated_contours(combined_blank_image, approx_contours)
