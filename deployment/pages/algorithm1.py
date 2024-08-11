@@ -158,7 +158,7 @@ def main():
         csv_path = csv_file.name
 
 
-        with open(f"tests/{csv_path}", 'wb') as f:
+        with open(f"../tests/{csv_path}", 'wb') as f:
             f.write(csv_file.getbuffer())
 
         title = st.text_input("Mirror Symmetry Detection")
