@@ -111,7 +111,7 @@ def draw_b_spline_curve(image, points, color=(0, 255, 0)):
 
     return image
 
-def detecting_mirrorLine(image_path, csv_path, title):
+def detecting_mirrorLine(csv_path, title):
     """
     Detects the line of symmetry in the image and finds the Harris corners and their corresponding symmetric points.
     """
@@ -160,9 +160,8 @@ def detecting_mirrorLine(image_path, csv_path, title):
         plt.show()
 
 def main():
-    image_path = 'occlusion2.png'
-    csv_path = 'occlusion2.csv'  # Update this if you need CSV data for other purposes
-    detecting_mirrorLine(image_path, csv_path, "Mirror Symmetry Detection")
+    csv_path = 'occlusion1.csv'  # Update this if you need CSV data for other purposes
+    detecting_mirrorLine( csv_path, "Mirror Symmetry Detection")
 
 if __name__ == '__main__':
     main()
