@@ -2,9 +2,10 @@ import pandas as pd
 import numpy as np
 import cv2
 from scipy.interpolate import UnivariateSpline, interp1d
+import matplotlib.pyplot as plt
 
 # Load data into a DataFrame
-df = pd.read_csv("trash/tc/frag1.csv", header=None, names=['Curve', 'Shape', 'X', 'Y'])
+df = pd.read_csv("trash/tc/occlusion2.csv", header=None, names=['Curve', 'Shape', 'X', 'Y'])
 
 # Smoothing function
 def smooth_points(x, y, s=0):
@@ -187,6 +188,10 @@ for curve_id, group in curves:
 
 # Combine all images into one large image
 combined_image = combine_images(images, positions, width=1000, height=1000)
+plt.imshow(combined_image, cmap='gray')
+plt.axis('off')
+plt.show()
+
 cv2.imwrite("master_folder\\utils\\output\\algo4\\combined_shapes.png", combined_image)
 
 # Save the coordinates to a CSV file
