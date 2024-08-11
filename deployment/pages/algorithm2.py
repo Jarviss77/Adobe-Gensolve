@@ -152,8 +152,8 @@ def multi_scale_and_shift_detection(reference_images, query_image, scales, shift
 
 
 def test_general_hough(reference_images, query_image):
-    scales = [1.0,1.5,0.75,0.5,0.25,1.75]  # Example scales
-    shifts = [(0, 0),(10,10),(-10,-10),(5,5),(-5,-5),(10,-10)]  # Example shifts
+    scales = [1.0]  # Example scales
+    shifts = [(0, 0)]  # Example shifts
 
     best_accumulator, best_position, best_scale, best_shift, best_reference_image = multi_scale_and_shift_detection(
         reference_images, query_image, scales, shifts)

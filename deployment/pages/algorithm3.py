@@ -206,13 +206,15 @@ def shapes_to_image(shapes, image_shape=(250, 250)):
                 image[int(y), int(x)] = 255
     return image
 
-
+import os
 def main():
     st.title("Generalized Hough Transform with Multi-Scale and Shift Detection")
 
     # File uploader for reference images and query image
-    ref_file_1 = '../master_folder/utils/images/single_ellipse.csv'
-    ref_file_2 = '../master_folder/utils/images/double_ellipse.csv'
+    # Construct the file paths
+    script_dir = os.path.dirname(__file__)
+    ref_file_1 = os.path.join(script_dir, 'single_ellipse.csv')
+    ref_file_2 = os.path.join(script_dir, 'double_ellipse.csv')
     query_file = st.file_uploader("Upload Query CSV", type=["csv"])
 
     if ref_file_1 and ref_file_2 and query_file:
