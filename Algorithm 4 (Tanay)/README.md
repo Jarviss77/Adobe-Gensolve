@@ -1,168 +1,60 @@
-# Symmetry Detection and Analysis Algorithm (Algorithm 1)
-![Output using algo1](./outputs/algo1/tc1.png)
+# Shape Detection and Regularization and Completion (Algorithm 4)
 
-![Output using algo1](./outputs/algo1/tc2.png)
+## Sample output
+![frag1](outputs\algo4\frag1.png)
+![isolated](outputs\algo4\isolated.png)
+![occlusion1](outputs\algo4\occlusion1.png)
+![occlusion2](outputs\algo4\occlusion2.png)
 
---Output Using Algorithm 1
-This algorithm efficiently identifies and analyzes symmetry in images through a series of methodical steps:
 
-## 1. **Finding the Line of Symmetry**
-   - **SIFT Feature Matching:**
-     - Utilizes SIFT (Scale-Invariant Feature Transform) to extract keypoints and descriptors from both the original image and its horizontally flipped version.
-     - Matches these features using a brute-force matcher (`BFMatcher`), selecting the most accurate matches.
-   - **Hexbin Analysis:**
-     - Analyzes matched points by calculating the angle and distance (`r`, `theta`) relative to the X-axis.
-     - Generates a hexbin plot to visualize the distribution of these `(r, θ)` pairs.
-   - **Vote Sorting:**
-     - Examines the hexbin plot to identify the most prominent bin, indicating the most likely line of symmetry.
+## Overview
 
-## 2. **Finding and Selecting Harris Corners**
-   - **Corner Detection:**
-     - Applies Harris corner detection to identify points with significant intensity changes, often corresponding to corners.
-   - **Thresholding and Sorting:**
-     - Filters detected corners using a threshold and selects the top 15 based on their corner response values (corner strength).
-   - **Code Implementation:**
-     - The `detect_harris_corners` function processes the image, converting it to grayscale, applying the Harris corner detector, and selecting the top 15 corners.
+This algorithm processes a series of polylines from a CSV file, detecting the closest possible shapes using OpenCV's contour analysis techniques. It is designed to identify shapes such as circles, ellipses, straight lines, polygons, and stars within the given curves. If no shape is detected, the original shape (curve) is retained. The identified shapes or curves are then visualized on an image, and finally, all the images are combined into one composite image.
 
-## 3. **Finding Corresponding Points on the Opposite Side**
-   - **Symmetry Line Equation:**
-     - Determines the line of symmetry (given by `r` and `theta`), and calculates each detected corner's symmetric counterpart using geometric properties of the line.
-   - **Opposite Point Calculation:**
-     - Computes the corresponding point for each corner on the opposite side of the symmetry line by reflecting the point across the line.
 
-## 4. **Connecting Points Using B-Spline**
-   - **Spline Drawing:**
-     - Draws a B-spline curve connecting each original corner and its symmetric counterpart.
-     - The `draw_b_spline_curve` function interpolates between these points to create smooth connecting curves.
+## Algorithm Workflow
 
-## Final Display
-   - The final image displays the original Harris corners, their symmetric counterparts, the symmetry line, and the B-spline curves connecting each pair of points.
+1. **Data Loading:** The algorithm begins by loading the CSV data containing polyline coordinates.
+  
+2. **Smoothing and Interpolation:** Each polyline is smoothed and interpolated to refine the curve, providing a higher resolution for shape detection.
 
----
+3. **Shape Detection:** The smoothed and interpolated data is converted into an image, where OpenCV is used to detect predefined shapes. If no shape is recognized, the original curve is retained.
 
-This approach combines feature matching, symmetry detection, corner detection, and curve interpolation to analyze and visualize symmetry in images.
+4. **Shape Drawing:** Detected shapes or original curves are drawn on a blank image, and their coordinates are recorded.
 
----
+5. **Image Combination:** All individual images are combined into a final composite image, maintaining their relative positions, which is then saved as an output file.
 
-# Generalized Hough Transform Algorithm for Shape Detection (Algorithm 2)
-![Output using algo1](./outputs/algo2/tc1.png)
+## Shape Detection
 
-![Output using algo1](./outputs/algo2/tc2.png)
+The shape detection process in this algorithm involves several steps to accurately identify and classify geometric shapes from a set of polylines. Here’s a breakdown of how shape detection is performed:
 
---Output Using Algorithm 2
-This algorithm detects shapes in images using the Generalized Hough Transform. It involves several steps including edge detection, gradient orientation computation, and gradient accumulation.
+1. **Data Preparation:**
+   - **Smoothing:** Each polyline is smoothed to reduce noise and create a more continuous curve. This is done using `UnivariateSpline`, which fits a spline to the data points. The smoothing parameter `s` controls the degree of smoothness.
+   - **Interpolation:** The smoothed curves are then interpolated to increase the resolution of the data. This interpolation creates a high-resolution set of points along the curve, which helps in better shape detection.
 
-## Key Components and Steps
+2. **Image Conversion:**
+   - The interpolated points are converted into a binary image where each point is represented as a white pixel on a black background. This conversion helps in using OpenCV’s shape detection functions.
 
-### 1. **Edge Detection and Gradient Orientation**
-   - **Canny Edge Detection:**
-     - Uses the `canny` function to detect edges in the image, effective for identifying boundaries.
-   - **Gradient Orientation Calculation:**
-     - Computes gradient orientation using the Sobel filter, with gradients calculated in both x and y directions (`dx` and `dy`).
+3. **Edge Detection and Shape Detection:**
+   - **Edge Detection:** The Canny edge detector is applied to find edges in the image, which helps in identifying the boundaries of shapes. A Gaussian blur is applied to smooth the edges and reduce noise.
+   - **Line Detection:** Using the Hough Line Transform, straight lines in the image are detected. Detected lines are stored as coordinates.
+   - **Contour Detection:** Contours of shapes are found using `cv2.findContours`. Contours represent the boundaries of shapes detected in the image.
+   
+4. **Shape Approximation:**
+   - **Polygon Approximation:** For each detected contour, `cv2.approxPolyDP` is used to approximate the contour to a polygon with fewer vertices. This helps in simplifying the shape and making it easier to classify.
+   - **Shape Classification:**
+     - **Circle:** A shape is classified as a circle if it has a high degree of circularity. Circularity is calculated by comparing the area of the shape to the area of the circle that would have the same radius.
+     - **Ellipse:** If the contour is close to an ellipse, it is classified as an ellipse. The `cv2.fitEllipse` function helps in fitting an ellipse to the contour.
+     - **Triangle, Square, Rectangle:** The number of vertices in the approximated polygon helps in classifying the shape. For example, three vertices indicate a triangle, four vertices suggest a square or rectangle, and so on.
+     - **Star:** A shape with exactly ten vertices is classified as a star.
+     - **Polygon:** Shapes with more than four vertices but not fitting the criteria for other shapes are classified as polygons.
 
-### 2. **R-Table Construction**
-   - **Building the R-Table:**
-     - Constructs an R-Table based on detected edges and their gradient orientations. It stores relative positions (vectors) of edge points with respect to a reference point.
+5. **Shape Drawing:**
+   - Detected shapes are drawn on a blank image using OpenCV drawing functions. Shapes such as circles are approximated by generating points around the perimeter, while polygons and contours are drawn directly.
 
-### 3. **Accumulation of Gradients**
-   - **Accumulate Gradients Using R-Table:**
-     - Uses the R-Table to accumulate votes in an accumulator array. For each edge point, the function looks up corresponding vectors and increments the accumulator.
+6. **Shape Prioritization:**
+   - Shapes are sorted based on a predefined priority list. This ensures that the most likely shape is selected and displayed. The priority order is: Circle, Square, Rectangle, Triangle, Ellipse, Star, Polygon, and Line.
 
-### 4. **Overlay and Visualization**
-   - **Overlay the Reference Image:**
-     - The `overlay_reference_image` function overlays the reference image on the query image at the detected position.
-   - **Visualization:**
-     - The `test_general_hough` function visualizes the results including the reference image, query image with detected points, the accumulator, and the final overlay.
+By following these steps, the algorithm accurately detects and classifies geometric shapes, providing a visual representation of the identified shapes or retaining the original curves when no recognizable shape is found.
 
-### 5. **Testing and Usage**
-   - **Shape-to-Image Conversion:**
-     - Converts a set of shapes into binary images using the `shapes_to_image` function.
-   - **Testing:**
-     - The `test` function reads shape data from CSV files, converts them to images, and applies the Generalized Hough Transform.
-
-## Example Workflow
-
-1. **Read and Convert Shape Data:**
-   - Read shape data from CSV files and convert them to binary images.
-
-2. **Apply Generalized Hough Transform:**
-   - Apply the Generalized Hough Transform to the query image using the reference images.
-
-3. **Visualize Results:**
-   - Visualize the results including the best match and the overlayed reference image.
-
-## Algo 2 Summary
-
-- **Edge Detection:** Uses Canny edge detection and Sobel filter.
-- **R-Table Construction:** Creates a lookup table for edge points.
-- **Gradient Accumulation:** Accumulates votes in an accumulator array.
-- **Overlay and Visualization:** Displays detected shapes and overlays the reference image..
-
----
-
-# Generalized Hough Transform Algorithm for Shape Detection With Multi-Scale and Multi-Shift Detection (Algorithm 3)
-![Output using algo1](./outputs/algo3/tc1.png)
-
-![Output using algo1](./outputs/algo3/tc2.png)
-
---Output Using Algorithm 3
-
-This advanced algorithm detects shapes using the Generalized Hough Transform with added multi-scale and multi-shift detection capabilities.
-
-## Key Components and Steps
-
-### 1. **Edge Detection and Gradient Orientation**
-   - **Canny Edge Detection:**
-     - Uses the `canny` function to detect edges effectively.
-   - **Gradient Orientation Calculation:**
-     - Computes gradient orientation using the Sobel filter.
-
-### 2. **R-Table Construction**
-   - **Building the R-Table:**
-     - Constructs an R-Table based on detected edges and orientations.
-
-### 3. **Accumulation of Gradients**
-   - **Accumulate Gradients Using R-Table:**
-     - Accumulates votes in an accumulator array.
-
-### 4. **Multi-Scale and Multi-Shift Detection**
-   - **Generate Shifts:**
-     - Creates a list of possible shifts for the reference image.
-   - **Multi-Scale Detection:**
-     - Tests different scales of the reference image to detect size variations.
-   - **Multi-Shift Detection:**
-     - Tests various shifts to find the best alignment.
-
-### 5. **Overlay and Visualization**
-   - **Overlay the Reference Image:**
-     - Overlays the reference image on the query image at the detected position.
-   - **Visualization:**
-     - Visualizes the results including the reference image, query image with detected points, and the final overlay.
-
-### 6. **Testing and Usage**
-   - **Shape-to-Image Conversion:**
-     - Converts shapes to binary images.
-   - **Testing:**
-     - Reads shape data from CSV files, converts them to images, and applies the Generalized Hough Transform.
-
-## Example Workflow
-
-1. **Read and Convert Shape Data:**
-   - Read and convert shape data from CSV files to binary images.
-
-2. **Apply Generalized Hough Transform:**
-   - Apply the Generalized Hough Transform with multi-scale and multi-shift detection.
-
-3. **Visualize Results:**
-   - Visualize the best match and overlayed reference image.
-
-## Algo 3 Summary
-
-- **Edge Detection:** Uses Canny edge detection and Sobel filter.
-- **R-Table Construction:** Creates a lookup table for edge points.
-- **Gradient Accumulation:** Accumulates votes in an accumulator array.
-- **Multi-Scale and Multi-Shift Detection:** Tests different scales and shifts.
-- **Overlay and Visualization:** Displays the detected shapes and overlays the reference image.
-.
-
----
+This shape detection process is robust and versatile, making it suitable for a wide range of applications where precise shape recognition is crucial.
