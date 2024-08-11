@@ -37,6 +37,11 @@ For the occlusion handling task, we have proposed and implemented the following 
 
 - **Details:** For a detailed explanation and implementation of this algorithm, please refer to the [Generalized Hough Transform with Multi-Scaling and Multi-Shifting README](/Algorithm%203%20(Generalised%20Hough%20Transfrom%20with%20SIFT)/).
 
+### 4. Shape detection and Completion
+- **Process:**
+  - In this algorith we are iterating over each polyline and if incomplete shape is detected in particular polyline our algo sucessfully completes it.
+- **Details:** For a detailed explanation and implementation of this algorithm, please refer to the [Shape detection and Completion](/Algorithm%204%20(Shape%20Detection%20and%20Completion)/README.md).
+
 ## Output Using The Above Mentioned Algorithms
 
 - **Output Using Algorithm 1**: 
