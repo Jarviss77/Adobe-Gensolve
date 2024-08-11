@@ -28,7 +28,7 @@ def read_csv_(csv_path):
         npXYs = np_path_XYs[np_path_XYs[:, 0] == i][:, 1:]
         XYs = []
         for j in np.unique(npXYs[:, 0]):
-            XY = npXYs[npXYs[:, 0] == j][:[:, 1:]
+            XY = npXYs[npXYs[:, 0] == j][:, 1:]
             XYs.append(XY)
         path_XYs.append(XYs)
     return path_XYs
