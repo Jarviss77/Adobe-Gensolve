@@ -42,5 +42,6 @@ This algorithm efficiently identifies and analyzes symmetry in images through a 
 
 This approach combines feature matching, symmetry detection, corner detection, and curve interpolation to analyze and visualize symmetry in images.
 
+
 ---
 
