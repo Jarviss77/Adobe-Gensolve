@@ -20,28 +20,36 @@ def read_csv(data):
         path_XYs.append(XYs)
     return path_XYs
 
-
 def create_image_from_curves(curves, image_size=(500, 500), color=(255, 255, 255)):
     image = np.zeros((image_size[0], image_size[1], 3), dtype=np.uint8)
 
     for curve in curves:
         for points in curve:
-            if len(points) <= 1:
+            if len(points) < 2:
                 continue
 
-            if len(points) <=1:
+            if len(points) == 2:
                 cv2.line(image, tuple(map(int, points[0])), tuple(map(int, points[1])), color, 2)
                 continue
 
             x = np.array([p[0] for p in points])
             y = np.array([p[1] for p in points])
 
-            tck, u = splprep([x, y], s=0)
-            u_new = np.linspace(u.min(), u.max(), 1000)
-            x_new, y_new = splev(u_new, tck, der=0)
+            if len(np.unique(x)) <= 2 or len(np.unique(y)) <= 2:
+                print("Not enough unique points to fit a spline. Skipping this segment.")
+                continue
 
-            for i in range(len(x_new) - 1):
-                cv2.line(image, (int(x_new[i]), int(y_new[i])), (int(x_new[i + 1]), int(y_new[i + 1])), color, 2)
+            try:
+                tck, u = splprep([x, y], s=0, k=2)
+                u_new = np.linspace(u.min(), u.max(), 1000)
+                x_new, y_new = splev(u_new, tck, der=0)
+                
+                for i in range(len(x_new) - 1):
+                    cv2.line(image, (int(x_new[i]), int(y_new[i])), (int(x_new[i + 1]), int(y_new[i + 1])), color, 2)
+
+            except Exception as e:
+                print(f"Error fitting spline: {e}")
+                continue
 
     return image
 
